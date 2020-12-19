@@ -1,0 +1,13 @@
+Yangine/Binaries/
+Yangine/Temp/
+Yangine/obj/
+.vs/
+.git/
+.vscode/
+*.obj
+*/Debug/
+*/obj/
+*/Temp/
+*/Binaries/
+*/Builds/
+Debug/*

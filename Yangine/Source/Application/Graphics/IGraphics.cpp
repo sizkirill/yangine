@@ -1,0 +1,181 @@
+#include "IGraphics.h"
+#include <Application/Graphics/SDLRenderer.h>
+#include <Application/Graphics/Textures/Sprite.h>
+
+using yang::IGraphics;
+
+IGraphics::IGraphics()
+{
+	
+}
+
+IGraphics::~IGraphics()
+{
+	
+}
+
+std::unique_ptr<IGraphics> yang::IGraphics::Create()
+{
+	return std::make_unique<SDLRenderer>();
+}
+
+bool yang::IGraphics::DrawCircle(const FVec2& center, float radius, const IColor& color, uint8_t segments)
+{
+	// Those functions should handle logging errors
+	if (!SetDrawColor(color))
+	{
+		return false;
+	}
+	return DrawCircle(center, radius, segments);
+}
+
+bool yang::IGraphics::FillCircle(const FVec2& center, float radius, const IColor& color, uint8_t segments)
+{
+	// Those functions should handle logging errors
+	if (!SetDrawColor(color))
+	{
+		return false;
+	}
+	return FillCircle(center, radius, segments);
+}
+
+bool yang::IGraphics::DrawPolygon(const std::vector<FVec2>& points, const IColor& color)
+{
+	// Those functions should handle logging errors
+	if (!SetDrawColor(color))
+	{
+		return false;
+	}
+	return DrawPolygon(points);
+}
+
+bool yang::IGraphics::FillTriangle(FVec2 points[3], const IColor& color)
+{
+	// Those functions should handle logging errors
+	if (!SetDrawColor(color))
+	{
+		return false;
+	}
+	return FillTriangle(points);
+}
+
+bool yang::IGraphics::DrawSprite(std::shared_ptr<Sprite> pSprite, const IRect& dst)
+{
+	if (!pSprite)
+		return false;
+
+	if (auto pTexture = pSprite->GetSourceTexture().lock(); pTexture != nullptr)
+	{
+		return DrawTexture(pTexture.get(), pSprite->GetSourceRect(), dst, pSprite->GetDrawParams());
+	}
+	return false;
+}
+
+bool yang::IGraphics::DrawSprite(std::shared_ptr<Sprite> pSprite, const FRect& dst)
+{
+	if (!pSprite)
+		return false;
+
+	if (auto pTexture = pSprite->GetSourceTexture().lock(); pTexture != nullptr)
+	{
+		return DrawTexture(pTexture.get(), pSprite->GetSourceRect(), dst, pSprite->GetDrawParams());
+	}
+	return false;
+}
+
+bool yang::IGraphics::DrawSprite(std::shared_ptr<Sprite> pSprite, IVec2 position)
+{
+	if (!pSprite) 
+		return false;
+
+	if (auto pTexture = pSprite->GetSourceTexture().lock(); pTexture != nullptr)
+	{
+		auto sourceRect = pSprite->GetSourceRect();
+		auto dstRect = sourceRect;
+		dstRect.x = position.x;
+		dstRect.y = position.y;
+
+		return DrawTexture(pTexture.get(), sourceRect, dstRect, pSprite->GetDrawParams());
+	}
+	return false;
+}
+
+bool yang::IGraphics::DrawRect(const IRect& rect, const IColor& color)
+{
+	// Those functions should handle logging errors
+	if (!SetDrawColor(color))
+	{
+		return false;
+	}
+	return DrawRect(rect);
+}
+
+bool yang::IGraphics::FillRect(const IRect& rect, const IColor& color)
+{
+	// Those functions should handle logging errors
+	if (!SetDrawColor(color))
+	{
+		return false;
+	}
+	return FillRect(rect);
+}
+
+bool yang::IGraphics::DrawLine(const IVec2& start, const IVec2& end, const IColor& color)
+{
+	// Those functions should handle logging errors
+	if (!SetDrawColor(color))
+	{
+		return false;
+	}
+	return DrawLine(start, end);
+}
+
+bool yang::IGraphics::DrawLines(const std::vector<IVec2>& points, const IColor& color)
+{
+	// Those functions should handle logging errors
+	if (!SetDrawColor(color))
+	{
+		return false;
+	}
+	return DrawLines(points);
+}
+
+bool yang::IGraphics::DrawRect(const FRect& rect, const IColor& color)
+{
+	// Those functions should handle logging errors
+	if (!SetDrawColor(color))
+	{
+		return false;
+	}
+	return DrawRect(rect);
+}
+
+bool yang::IGraphics::FillRect(const FRect& rect, const IColor& color)
+{
+	// Those functions should handle logging errors
+	if (!SetDrawColor(color))
+	{
+		return false;
+	}
+	return FillRect(rect);
+}
+
+bool yang::IGraphics::DrawLine(const FVec2& start, const FVec2& end, const IColor& color)
+{
+	// Those functions should handle logging errors
+	if (!SetDrawColor(color))
+	{
+		return false;
+	}
+	return DrawLine(start, end);
+}
+
+bool yang::IGraphics::DrawLines(const std::vector<FVec2>& points, const IColor& color)
+{
+	// Those functions should handle logging errors
+	if (!SetDrawColor(color))
+	{
+		return false;
+	}
+	return DrawLines(points);
+}
