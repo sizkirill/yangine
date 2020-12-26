@@ -44,18 +44,29 @@ bool yang::IGameLayer::Init(const yang::ApplicationLayer& app)
         }
     }
 
-    EventDispatcher::Get()->AddEventListener(DestroyActorEvent::kEventId, [this](IEvent* pEvent)
+    m_destroyActorEventListener.Register([this](IEvent* pEvent)
         {
             DestroyActor(static_cast<DestroyActorEvent*>(pEvent)->GetActorId());
         });
-
-    EventDispatcher::Get()->AddEventListener(CreateActorEvent::kEventId, [this](IEvent* pEvent)
+    m_createActorEventListener.Register([this](IEvent* pEvent)
         {
             CreateActorEvent* pCreateActorEvent = static_cast<CreateActorEvent*>(pEvent);
             auto pFilepath = pCreateActorEvent->GetXmlFilepath();
             auto maybeLocation = pCreateActorEvent->GetSpawnPosition();
             SpawnActor(pFilepath, maybeLocation);
         });
+    //EventDispatcher::Get()->AddEventListener(DestroyActorEvent::kEventId, [this](IEvent* pEvent)
+    //    {
+    //        DestroyActor(static_cast<DestroyActorEvent*>(pEvent)->GetActorId());
+    //    });
+
+    //EventDispatcher::Get()->AddEventListener(CreateActorEvent::kEventId, [this](IEvent* pEvent)
+    //    {
+    //        CreateActorEvent* pCreateActorEvent = static_cast<CreateActorEvent*>(pEvent);
+    //        auto pFilepath = pCreateActorEvent->GetXmlFilepath();
+    //        auto maybeLocation = pCreateActorEvent->GetSpawnPosition();
+    //        SpawnActor(pFilepath, maybeLocation);
+    //    });
 
     m_pCollisionSystem.reset(new CollisionSystem);
     RegisterComponents();

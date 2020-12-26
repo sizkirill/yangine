@@ -9,6 +9,9 @@
 #include <Logic/Collisions/CollisionSystem.h>
 #include <memory>
 #include <vector>
+#include <Logic/Event/EventListener.h>
+#include <Logic/Event/Events/DestroyActorEvent.h>
+#include <Logic/Event/Events/CreateActorEvent.h>
 
 //! \namespace yang Contains all Yangine code
 namespace yang
@@ -119,6 +122,9 @@ protected: // actually should be private
     std::vector<Id> m_actorsToKill;                             ///< Collection of IDs of actors that are going to be destroyed at next frame
     std::vector<std::unique_ptr<IView>> m_pViews;               ///< Collection of all views
     std::unique_ptr<CollisionSystem> m_pCollisionSystem;
+
+    EventListener<DestroyActorEvent> m_destroyActorEventListener;
+    EventListener<CreateActorEvent> m_createActorEventListener;
 private:
 	// --------------------------------------------------------------------- //
 	// Private Member Variables

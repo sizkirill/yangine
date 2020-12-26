@@ -207,6 +207,7 @@
     <ClInclude Include="Source\Logic\Components\TextComponent.h" />
     <ClInclude Include="Source\Logic\Components\TransformComponent.h" />
     <ClInclude Include="Source\Logic\Event\EventDispatcher.h" />
+    <ClInclude Include="Source\Logic\Event\EventListener.h" />
     <ClInclude Include="Source\Logic\Event\Events\CreateActorEvent.h" />
     <ClInclude Include="Source\Logic\Event\Events\DestroyActorEvent.h" />
     <ClInclude Include="Source\Logic\Event\IEvent.h" />

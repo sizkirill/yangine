@@ -393,6 +393,9 @@
     <ClInclude Include="Source\Views\IView.h">
       <Filter>Views</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Logic\Event\EventListener.h">
+      <Filter>Logic\Event</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Application\ApplicationGlobals.cpp">
