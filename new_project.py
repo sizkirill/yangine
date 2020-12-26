@@ -70,7 +70,7 @@ with open('premake5.lua', 'r') as premake5_file:
 with open('premake5_newproject_template.txt', 'r') as template:
     template_data = template.read()
     template_data = template_data.replace('$project_name', project_name)
-    template_data = template_data.replace('$engine_dir', engine_dir)
+    template_data = template_data.replace('$engine_dir', engine_dir.lstrip('./'))
     with open('../premake5.lua', 'w') as premake5_file:
         premake5_file.write(template_data)
     
