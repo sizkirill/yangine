@@ -1,7 +1,6 @@
 #pragma once
 #include <Utils/Vector2.h>
 #include <Utils/Color.h>
-#include <Utils/Rectangle.h>
 
 namespace tinyxml2
 {
@@ -13,12 +12,7 @@ namespace yang
     /// Helper function to read Vector2 from XML element
     /// \param pData - XML element to read from
     /// \return Vector2 from the xml element
-    FVec2 FVectorFromXML(tinyxml2::XMLElement* pData, FVec2 defaultVal = { 0,0 });
-
-    /// Helper function to read Vector2 from XML element
-    /// \param pData - XML element to read from
-    /// \return Vector2 from the xml element
-    IVec2 IVectorFromXML(tinyxml2::XMLElement* pData, IVec2 defaultVal = { 0,0 });
+    Vector2<float> VectorFromXML(tinyxml2::XMLElement* pData, FVec2 defaultVal = { 0,0 });
 
     /// Helper function to read angle from XML element. Converts degrees to radians
     /// \param pData - XML element to read from
@@ -35,7 +29,4 @@ namespace yang
     /// \param pData - XML element to read from
     /// \return FColor from the xml element
     FColor FColorFromXML(tinyxml2::XMLElement* pData, FColor defaultVal = { 1,1,1,1 });
-
-    IRect IRectFromXML(tinyxml2::XMLElement* pData, IRect defaultVal = { 0,0,0,0 });
-    FRect FRectFromXML(tinyxml2::XMLElement* pData, FRect defaultVal = { 0,0,0,0 });
 }

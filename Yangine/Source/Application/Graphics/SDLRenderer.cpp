@@ -37,6 +37,7 @@ bool yang::SDLRenderer::StartDrawing(uint8_t red, uint8_t green, uint8_t blue, u
 {
 	SDL_SetRenderDrawColor(m_pRenderer.get(), red, green, blue, SDL_ALPHA_OPAQUE);
 	SDL_RenderClear(m_pRenderer.get());
+
 	// TODO: Check for SDL errors
 	return true;
 }
@@ -90,12 +91,11 @@ bool yang::SDLRenderer::DrawTexture(ITexture* pTexture, IVec2 position, const Te
 		pointToRotate.y = (float)drawParams.m_pointToRotate.value().y;
 	}
 
-	//FVec2 transformedPosition = m_cameraTransform.TransformPoint(FVec2(position));
+	FVec2 transformedPosition = m_cameraTransform.TransformPoint(FVec2(position));
 	IVec2 dimensions = pTexture->GetDimensions();
-	/*SDL_FRect dstRect{transformedPosition.x, transformedPosition.y, (float)dimensions.x, (float)dimensions.y};*/
-	SDL_FRect dstRect{ (float)position.x, (float)position.y, (float)dimensions.x, (float)dimensions.y };
+	SDL_FRect dstRect{transformedPosition.x, transformedPosition.y, (float)dimensions.x, (float)dimensions.y};
 
-	if (SDL_RenderCopyExF(m_pRenderer.get(), pSDLTexture, nullptr, &dstRect, drawParams.m_angle,
+	if (SDL_RenderCopyExF(m_pRenderer.get(), pSDLTexture, nullptr, &dstRect, drawParams.m_angle + Math::ToDegrees(m_cameraRotation),
 		(drawParams.m_pointToRotate ? &pointToRotate : nullptr), ToRendererFlip(drawParams.m_flip)))
     {
         LOG(Error, "Unable to draw SDL_Texture. Error: %s", SDL_GetError());
@@ -112,8 +112,7 @@ bool yang::SDLRenderer::DrawTexture(ITexture* pTexture, const IRect& dest, const
         return false;
     }
 
-    /*SDL_FRect destination = ToSDLFRect(m_cameraTransform.TransformAARect(dest));*/
-	SDL_FRect destination = ToSDLFRect(dest);
+    SDL_FRect destination = ToSDLFRect(m_cameraTransform.TransformAARect(dest));
     SDL_Texture* pSDLTexture = reinterpret_cast<SDL_Texture*>(pTexture->GetNativeTexture());
 
 	SDL_FPoint pointToRotate;
@@ -123,7 +122,7 @@ bool yang::SDLRenderer::DrawTexture(ITexture* pTexture, const IRect& dest, const
 		pointToRotate.y = (float)drawParams.m_pointToRotate.value().y;
 	}
 
-    if (SDL_RenderCopyExF(m_pRenderer.get(), pSDLTexture, nullptr, &destination, drawParams.m_angle, 
+    if (SDL_RenderCopyExF(m_pRenderer.get(), pSDLTexture, nullptr, &destination, drawParams.m_angle + Math::ToDegrees(m_cameraRotation), 
 		(drawParams.m_pointToRotate ? &pointToRotate : nullptr), ToRendererFlip(drawParams.m_flip)))
     {
         LOG(Error, "Unable to draw SDL_Texture. Error: %s", SDL_GetError());
@@ -141,11 +140,10 @@ bool yang::SDLRenderer::DrawTexture(ITexture* pTexture, const IRect& src, const 
     }
 
     SDL_Rect source = ToSDLRect(src);
-	//FVec2 destOrigin = m_cameraTransform.TransformPoint(FVec2((float)dest.x, (float)dest.y));
+	FVec2 destOrigin = m_cameraTransform.TransformPoint(FVec2((float)dest.x, (float)dest.y));
     //SDL_FRect destination = ToSDLFRect(m_cameraTransform.TransformAARect(dest));
-	//SDL_FRect destination {destOrigin.x, destOrigin.y, (float)dest.width * m_cameraScaleFactors.x, (float)dest.height * m_cameraScaleFactors.y};
+	SDL_FRect destination {destOrigin.x, destOrigin.y, (float)dest.width * m_cameraScaleFactors.x, (float)dest.height * m_cameraScaleFactors.y};
     SDL_Texture* pSDLTexture = reinterpret_cast<SDL_Texture*>(pTexture->GetNativeTexture());
-	SDL_FRect destination = { (float)dest.x, (float)dest.y, (float)dest.width, (float)dest.height };
 
 	SDL_FPoint pointToRotate;
 	if (drawParams.m_pointToRotate.has_value())
@@ -154,7 +152,7 @@ bool yang::SDLRenderer::DrawTexture(ITexture* pTexture, const IRect& src, const 
 		pointToRotate.y = (float)drawParams.m_pointToRotate.value().y;
 	}
 
-    if (SDL_RenderCopyExF(m_pRenderer.get(), pSDLTexture, &source, &destination, drawParams.m_angle,
+    if (SDL_RenderCopyExF(m_pRenderer.get(), pSDLTexture, &source, &destination, drawParams.m_angle + Math::ToDegrees(m_cameraRotation),
 		(drawParams.m_pointToRotate ? &pointToRotate : nullptr), ToRendererFlip(drawParams.m_flip)))
     {
         LOG(Error, "Unable to draw SDL_Texture. Error: %s", SDL_GetError());
@@ -166,7 +164,7 @@ bool yang::SDLRenderer::DrawTexture(ITexture* pTexture, const IRect& src, const 
 bool yang::SDLRenderer::DrawLines(const std::vector<IVec2>& points)
 {
 	std::vector<FVec2> fpoints(points.size());
-	//std::transform(points.cbegin(), points.cend(), fpoints.begin(), [this](const IVec2& point){ return m_cameraTransform.TransformPoint(FVec2(point)); });
+	std::transform(points.cbegin(), points.cend(), fpoints.begin(), [this](const IVec2& point){ return m_cameraTransform.TransformPoint(FVec2(point)); });
 	// On one hand, I probably shouldn't do this. On the other - what can go wrong? Both are just structs with 'int x' and 'int y' members. Making a new vector and copying data is too expensive
 	assert(sizeof(FVec2) == sizeof(SDL_FPoint));
 	if (SDL_RenderDrawLinesF(m_pRenderer.get(), reinterpret_cast<const SDL_FPoint*>(fpoints.data()), static_cast<int>(fpoints.size())))
@@ -374,8 +372,7 @@ std::shared_ptr<yang::ITexture> yang::SDLRenderer::CreateTexture(IVec2 dimension
 
 bool yang::SDLRenderer::DrawRect(const FRect& rect)
 {
-	//SDL_FRect toDraw = ToSDLFRect(m_cameraTransform.TransformAARect(rect));
-	SDL_FRect toDraw = ToSDLFRect(rect);
+	SDL_FRect toDraw = ToSDLFRect(m_cameraTransform.TransformAARect(rect));
 
     if (SDL_RenderDrawRectF(m_pRenderer.get(), &toDraw))
     {
@@ -387,8 +384,7 @@ bool yang::SDLRenderer::DrawRect(const FRect& rect)
 
 bool yang::SDLRenderer::FillRect(const FRect& rect)
 {
-    //SDL_FRect toDraw = ToSDLFRect(m_cameraTransform.TransformAARect(rect));
-	SDL_FRect toDraw = ToSDLFRect(rect);
+    SDL_FRect toDraw = ToSDLFRect(m_cameraTransform.TransformAARect(rect));
 
     if (SDL_RenderFillRectF(m_pRenderer.get(), &toDraw))
     {
@@ -400,10 +396,10 @@ bool yang::SDLRenderer::FillRect(const FRect& rect)
 
 bool yang::SDLRenderer::DrawLine(const FVec2& start, const FVec2& end)
 {
-	//FVec2 _start = m_cameraTransform.TransformPoint(start);
-	//FVec2 _end = m_cameraTransform.TransformPoint(end);
+	FVec2 _start = m_cameraTransform.TransformPoint(start);
+	FVec2 _end = m_cameraTransform.TransformPoint(end);
 
-	if (SDL_RenderDrawLineF(m_pRenderer.get(), start.x, start.y, end.x, end.y))
+	if (SDL_RenderDrawLineF(m_pRenderer.get(), _start.x, _start.y, _end.x, _end.y))
 	{
 		LOG(Error, "Unable to draw line. Error: %s", SDL_GetError());
 		return false;
@@ -413,46 +409,16 @@ bool yang::SDLRenderer::DrawLine(const FVec2& start, const FVec2& end)
 
 bool yang::SDLRenderer::DrawLines(const std::vector<FVec2>& points)
 {
-	//std::vector<FVec2> transformedPoints(points.size());
-	//std::transform(points.cbegin(), points.cend(), transformedPoints.begin(), [this](const FVec2& point) {return m_cameraTransform.TransformPoint(point); });
+	std::vector<FVec2> transformedPoints(points.size());
+	std::transform(points.cbegin(), points.cend(), transformedPoints.begin(), [this](const FVec2& point){return m_cameraTransform.TransformPoint(point); });
 	// On one hand, I probably shouldn't do this. On the other - what can go wrong? Both are just structs with 'float x' and 'float y' members.
 	assert(sizeof(FVec2) == sizeof(SDL_FPoint));
-	if (SDL_RenderDrawLinesF(m_pRenderer.get(), reinterpret_cast<const SDL_FPoint*>(points.data()), static_cast<int>(points.size())))
+	if (SDL_RenderDrawLinesF(m_pRenderer.get(), reinterpret_cast<const SDL_FPoint*>(transformedPoints.data()), static_cast<int>(transformedPoints.size())))
 	{
 		LOG(Error, "Unable to draw lines. Error: %s", SDL_GetError());
 		return false;
 	};
 
-	return true;
-}
-
-bool yang::SDLRenderer::DrawTexture(ITexture* pTexture, const IRect& src, const FRect& dest, const TextureDrawParams& drawParams)
-{
-	if (!pTexture)
-	{
-		LOG(Error, "Texture was nullptr");
-		return false;
-	}
-
-	SDL_Rect source = ToSDLRect(src);
-	//FVec2 destOrigin = m_cameraTransform.TransformPoint(FVec2(dest.x, dest.y));
-	//SDL_FRect destination = ToSDLFRect(m_cameraTransform.TransformAARect(dest));
-	SDL_FRect destination = ToSDLFRect(dest);
-	SDL_Texture* pSDLTexture = reinterpret_cast<SDL_Texture*>(pTexture->GetNativeTexture());
-
-	SDL_FPoint pointToRotate;
-	if (drawParams.m_pointToRotate.has_value())
-	{
-		pointToRotate.x = (float)drawParams.m_pointToRotate.value().x;
-		pointToRotate.y = (float)drawParams.m_pointToRotate.value().y;
-	}
-
-	if (SDL_RenderCopyExF(m_pRenderer.get(), pSDLTexture, &source, &destination, drawParams.m_angle,
-		(drawParams.m_pointToRotate ? &pointToRotate : nullptr), ToRendererFlip(drawParams.m_flip)))
-	{
-		LOG(Error, "Unable to draw SDL_Texture. Error: %s", SDL_GetError());
-		return false;
-	}
 	return true;
 }
 

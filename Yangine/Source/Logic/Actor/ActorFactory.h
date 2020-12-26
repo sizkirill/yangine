@@ -4,6 +4,7 @@
 #include <Logic/Components/IComponent.h>
 #include <Utils/Typedefs.h>
 #include <Utils/StringHash.h>
+#include <Views/IView.h>
 
 /** \file ActorFactory.h */
 /** Factory used to create actors */
@@ -12,6 +13,7 @@
 namespace yang
 {
     class IResource;
+    class Scene;
 /** \class ActorFactory */
 /** Factory used to create actors */
 class ActorFactory
@@ -36,13 +38,15 @@ public:
 
     /// Create an actor from an XML file. Under the covers calls the overload that takes in IResource*
     /// \param filepath - path to the XML file that contains actor description
+    /// \param pOwner - scene that owns this actor
     /// \return shared pointer to the new actor. Can be null if factory failed to create the actor
-    std::shared_ptr<Actor> CreateActor(const char* filepath);
+    std::shared_ptr<Actor> CreateActor(const char* filepath, std::shared_ptr<Scene> pOwner);
 
     /// Create an actor from a raw data resource
     /// \param pActorResource - resource that contains actor description
+    /// \param pOwner - scene that owns this actor
     /// \return shared pointer to the new actor. Can be null if factory failed to create the actor
-    std::shared_ptr<Actor> CreateActor(IResource* pActorResource);
+    std::shared_ptr<Actor> CreateActor(IResource* pActorResource, std::shared_ptr<Scene> pOwner);
 
     /// Add component creation function to a lookup table
     /// \param id - component ID to associate the function to
@@ -70,7 +74,6 @@ private:
 
     Id m_nextActorId;                                                        ///< ID that next actor will have. Increments after each actor is created
     std::unordered_map<Id, ComponentFunction> m_componentCreatorMap;         ///< Component creation functions lookup table
-        
 public:
 	// --------------------------------------------------------------------- //
 	// Accessors & Mutators

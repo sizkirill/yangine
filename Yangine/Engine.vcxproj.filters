@@ -58,12 +58,6 @@
     <Filter Include="Logic\Components\Particle">
       <UniqueIdentifier>{CBF007AD-37B3-3B37-8063-CAC3EC641415}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Logic\Components\Physics">
-      <UniqueIdentifier>{3AB7CAFE-26DC-197F-4F27-FF0E3BAB189D}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Logic\Components\Shapes">
-      <UniqueIdentifier>{7BBD4D9A-E7F4-9531-F0FE-F9545CB5BC2A}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Logic\Event">
       <UniqueIdentifier>{244C2140-9001-9A35-19F6-930C85AA9039}</UniqueIdentifier>
     </Filter>
@@ -76,17 +70,11 @@
     <Filter Include="Logic\Map">
       <UniqueIdentifier>{601450EC-CC7E-0463-15BD-B5088166E2B7}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Logic\Physics">
-      <UniqueIdentifier>{05CF29FD-718F-A533-3ACA-EEB0A649EA0F}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Logic\Process">
       <UniqueIdentifier>{419BBF13-AD5B-3B4A-7696-84C7E2158026}</UniqueIdentifier>
     </Filter>
     <Filter Include="Logic\Process\Animation">
       <UniqueIdentifier>{70199C7A-DC50-E411-E55A-483551110B0B}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Logic\Process\Kinematic">
-      <UniqueIdentifier>{A52E38D9-1166-8070-1A70-E4938626A769}</UniqueIdentifier>
     </Filter>
     <Filter Include="Logic\Process\Timers">
       <UniqueIdentifier>{6453064D-50E2-8F16-F900-A411E56EA0BC}</UniqueIdentifier>
@@ -103,9 +91,6 @@
     <Filter Include="Utils">
       <UniqueIdentifier>{F68B420E-62A0-6ABF-2B22-0E1F97F566F0}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Utils\ThreadPool">
-      <UniqueIdentifier>{57B52A2E-43AE-4980-6CE0-2E055838298C}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Utils\TinyXml2">
       <UniqueIdentifier>{2C0EE35B-18DC-D661-0170-4788EDDCB2C6}</UniqueIdentifier>
     </Filter>
@@ -115,9 +100,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Application\ApplicationConstants.h">
-      <Filter>Application</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Application\ApplicationGlobals.h">
       <Filter>Application</Filter>
     </ClInclude>
     <ClInclude Include="Source\Application\ApplicationLayer.h">
@@ -140,9 +122,6 @@
     </ClInclude>
     <ClInclude Include="Source\Application\Audio\Sound\SDLSound.h">
       <Filter>Application\Audio\Sound</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Application\Graphics\Fonts\FontString.h">
-      <Filter>Application\Graphics\Fonts</Filter>
     </ClInclude>
     <ClInclude Include="Source\Application\Graphics\Fonts\IFont.h">
       <Filter>Application\Graphics\Fonts</Filter>
@@ -170,9 +149,6 @@
     </ClInclude>
     <ClInclude Include="Source\Application\Graphics\Textures\Sprite.h">
       <Filter>Application\Graphics\Textures</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Application\Graphics\Viewport.h">
-      <Filter>Application\Graphics</Filter>
     </ClInclude>
     <ClInclude Include="Source\Application\Input\IKeyboard.h">
       <Filter>Application\Input</Filter>
@@ -207,6 +183,9 @@
     <ClInclude Include="Source\Logic\Collisions\Collision.h">
       <Filter>Logic\Collisions</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Logic\Collisions\CollisionCallbackFactory.h">
+      <Filter>Logic\Collisions</Filter>
+    </ClInclude>
     <ClInclude Include="Source\Logic\Collisions\CollisionSystem.h">
       <Filter>Logic\Collisions</Filter>
     </ClInclude>
@@ -237,17 +216,8 @@
     <ClInclude Include="Source\Logic\Components\Particle\ParticleEmitterComponent.h">
       <Filter>Logic\Components\Particle</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Logic\Components\Physics\Box2DPhysicsComponent.h">
-      <Filter>Logic\Components\Physics</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Logic\Components\Physics\IPhysicsComponent.h">
-      <Filter>Logic\Components\Physics</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Logic\Components\RotationComponent.h">
       <Filter>Logic\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Logic\Components\Shapes\RectangleShape.h">
-      <Filter>Logic\Components\Shapes</Filter>
     </ClInclude>
     <ClInclude Include="Source\Logic\Components\SpriteComponent.h">
       <Filter>Logic\Components</Filter>
@@ -288,18 +258,6 @@
     <ClInclude Include="Source\Logic\Map\TiledMap.h">
       <Filter>Logic\Map</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Logic\Physics\Box2DAdapters.h">
-      <Filter>Logic\Physics</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Logic\Physics\Box2DPhysics.h">
-      <Filter>Logic\Physics</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Logic\Physics\IContactListener.h">
-      <Filter>Logic\Physics</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Logic\Physics\IPhysicsSimulation.h">
-      <Filter>Logic\Physics</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Logic\Process\Animation\AnimationProcess.h">
       <Filter>Logic\Process\Animation</Filter>
     </ClInclude>
@@ -309,8 +267,8 @@
     <ClInclude Include="Source\Logic\Process\IProcess.h">
       <Filter>Logic\Process</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Logic\Process\Kinematic\Rotation.h">
-      <Filter>Logic\Process\Kinematic</Filter>
+    <ClInclude Include="Source\Logic\Process\ProcessFactory.h">
+      <Filter>Logic\Process</Filter>
     </ClInclude>
     <ClInclude Include="Source\Logic\Process\ProcessManager.h">
       <Filter>Logic\Process</Filter>
@@ -318,10 +276,7 @@
     <ClInclude Include="Source\Logic\Process\Timers\DelayProcess.h">
       <Filter>Logic\Process\Timers</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Logic\Process\Timers\TimedProcess.h">
-      <Filter>Logic\Process\Timers</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Logic\Scene\UIScene.h">
+    <ClInclude Include="Source\Logic\Scene\Scene.h">
       <Filter>Logic\Scene</Filter>
     </ClInclude>
     <ClInclude Include="Source\Logic\Scripting\LuaCallback.h">
@@ -357,9 +312,6 @@
     <ClInclude Include="Source\Utils\Matrix.h">
       <Filter>Utils</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Utils\PerlinNoise.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Utils\Random.h">
       <Filter>Utils</Filter>
     </ClInclude>
@@ -368,12 +320,6 @@
     </ClInclude>
     <ClInclude Include="Source\Utils\StringHash.h">
       <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Utils\ThreadPool\ArrayJob.h">
-      <Filter>Utils\ThreadPool</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Utils\ThreadPool\ThreadPool.h">
-      <Filter>Utils\ThreadPool</Filter>
     </ClInclude>
     <ClInclude Include="Source\Utils\TinyXml2\tinyxml2.h">
       <Filter>Utils\TinyXml2</Filter>
@@ -393,14 +339,14 @@
     <ClInclude Include="Source\Views\IView.h">
       <Filter>Views</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Logic\Event\EventListener.h">
-      <Filter>Logic\Event</Filter>
+    <ClInclude Include="Source\Views\ViewFactory.h">
+      <Filter>Views</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Application\Graphics\Fonts\FontString.h">
+      <Filter>Application\Graphics\Fonts</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Source\Application\ApplicationGlobals.cpp">
-      <Filter>Application</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Application\ApplicationLayer.cpp">
       <Filter>Application</Filter>
     </ClCompile>
@@ -421,9 +367,6 @@
     </ClCompile>
     <ClCompile Include="Source\Application\Audio\Sound\SDLSound.cpp">
       <Filter>Application\Audio\Sound</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Application\Graphics\Fonts\FontString.cpp">
-      <Filter>Application\Graphics\Fonts</Filter>
     </ClCompile>
     <ClCompile Include="Source\Application\Graphics\Fonts\IFont.cpp">
       <Filter>Application\Graphics\Fonts</Filter>
@@ -451,9 +394,6 @@
     </ClCompile>
     <ClCompile Include="Source\Application\Graphics\Textures\Sprite.cpp">
       <Filter>Application\Graphics\Textures</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Application\Graphics\Viewport.cpp">
-      <Filter>Application\Graphics</Filter>
     </ClCompile>
     <ClCompile Include="Source\Application\Input\IKeyboard.cpp">
       <Filter>Application\Input</Filter>
@@ -488,6 +428,9 @@
     <ClCompile Include="Source\Logic\Collisions\Collision.cpp">
       <Filter>Logic\Collisions</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Logic\Collisions\CollisionCallbackFactory.cpp">
+      <Filter>Logic\Collisions</Filter>
+    </ClCompile>
     <ClCompile Include="Source\Logic\Collisions\CollisionSystem.cpp">
       <Filter>Logic\Collisions</Filter>
     </ClCompile>
@@ -514,12 +457,6 @@
     </ClCompile>
     <ClCompile Include="Source\Logic\Components\Particle\ParticleEmitterComponent.cpp">
       <Filter>Logic\Components\Particle</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Logic\Components\Physics\Box2DPhysicsComponent.cpp">
-      <Filter>Logic\Components\Physics</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Logic\Components\Physics\IPhysicsComponent.cpp">
-      <Filter>Logic\Components\Physics</Filter>
     </ClCompile>
     <ClCompile Include="Source\Logic\Components\RotationComponent.cpp">
       <Filter>Logic\Components</Filter>
@@ -563,23 +500,14 @@
     <ClCompile Include="Source\Logic\Map\TiledMap.cpp">
       <Filter>Logic\Map</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Logic\Physics\Box2DPhysics.cpp">
-      <Filter>Logic\Physics</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Logic\Physics\IContactListener.cpp">
-      <Filter>Logic\Physics</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Logic\Physics\IPhysicsSimulation.cpp">
-      <Filter>Logic\Physics</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Logic\Process\Animation\AnimationProcess.cpp">
       <Filter>Logic\Process\Animation</Filter>
     </ClCompile>
     <ClCompile Include="Source\Logic\Process\IProcess.cpp">
       <Filter>Logic\Process</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Logic\Process\Kinematic\Rotation.cpp">
-      <Filter>Logic\Process\Kinematic</Filter>
+    <ClCompile Include="Source\Logic\Process\ProcessFactory.cpp">
+      <Filter>Logic\Process</Filter>
     </ClCompile>
     <ClCompile Include="Source\Logic\Process\ProcessManager.cpp">
       <Filter>Logic\Process</Filter>
@@ -587,7 +515,7 @@
     <ClCompile Include="Source\Logic\Process\Timers\DelayProcess.cpp">
       <Filter>Logic\Process\Timers</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Logic\Scene\UIScene.cpp">
+    <ClCompile Include="Source\Logic\Scene\Scene.cpp">
       <Filter>Logic\Scene</Filter>
     </ClCompile>
     <ClCompile Include="Source\Logic\Scripting\LuaCallback.cpp">
@@ -617,9 +545,6 @@
     <ClCompile Include="Source\Utils\Logger.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Utils\PerlinNoise.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Utils\Random.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
@@ -631,6 +556,12 @@
     </ClCompile>
     <ClCompile Include="Source\Views\IView.cpp">
       <Filter>Views</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Views\ViewFactory.cpp">
+      <Filter>Views</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Application\Graphics\Fonts\FontString.cpp">
+      <Filter>Application\Graphics\Fonts</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

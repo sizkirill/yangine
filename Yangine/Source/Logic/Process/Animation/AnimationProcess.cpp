@@ -7,6 +7,19 @@
 #include <Logic/Components/SpriteComponent.h>
 #include <Logic/Components/Animation/AnimationComponent.h>
 
+using yang::IProcess;
+
+#pragma warning(push)
+#pragma warning(disable:4307)
+
+template<>
+std::shared_ptr<IProcess> IProcess::CreateProcess<yang::AnimationProcessDescription::GetHashName()>(std::shared_ptr<yang::Actor> pOwner)
+{
+    return std::make_shared<AnimationProcess>(pOwner);
+};
+
+#pragma warning(pop)
+
 yang::AnimationProcessDescription::AnimationProcessDescription(IProcess* pOwner)
     :m_pOwner(pOwner)
 {
@@ -40,4 +53,9 @@ void yang::AnimationProcessDescription::Update(float deltaSeconds, yang::Animati
 
         pSpriteData->SetSprite(currentFrame.m_pSprite);
     }
+}
+
+bool yang::AnimationProcessDescription::Init(tinyxml2::XMLElement* pData)
+{
+    return true;
 }

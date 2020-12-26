@@ -60,6 +60,21 @@ public:
 	/// <returns>true if owner actor has transform</returns>
 	virtual bool PostInit() override final;
 
+	/// <summary>
+	/// Emit particles
+	/// </summary>
+	void Emit();
+
+	/// <summary>
+	/// Reset particles
+	/// </summary>
+	void Reset();
+
+	/// <summary>
+	/// Reset particles
+	/// </summary>
+	void Stop();
+
 private:
 	// --------------------------------------------------------------------- //
 	// Private Member Variables
@@ -75,23 +90,38 @@ private:
 	size_t m_count = 0;													  ///< Max number of spawned particles
 	float m_radiusSqrd = 0;												  ///< Square of maximum distance for particles to travel (do we need it?)
 	std::vector<Particle> m_particles = {};								  ///< Container for particle instances
-	XorshiftRNG m_rngDevice = XorshiftRNG();										  ///< RNG device for particles
+	Random m_rngDevice = Random();										  ///< RNG device for particles
 	std::variant<std::shared_ptr<Sprite>, IColor> m_drawable = nullptr;   ///< Texture or color to draw
 	float m_lifetime = 0;												  ///< Lifetime of a particle system
 	FVec2 m_speedRange = { 0,0 };										  ///< Range of starting particle speeds
-	FVec2 m_initialAngleRange = { 0,0 };								  ///< Range of initial spawn angle
+	FVec2 m_angleRange = { 0,0 };										  ///< Range of initial spawn angle
+	bool m_isEmitting = false;											  ///< If we are emitting this particle
 
 	yang::TransformComponent* m_pOwnerTransform = nullptr;
+
 	// --------------------------------------------------------------------- //
 	// Private Member Functions
 	// --------------------------------------------------------------------- //
+	
+	/// <summary>
+	/// Spawn a particle then pushback it into the vector
+	/// </summary>
+	void AddParticle();
 
+	/// <summary>
+	/// Update particles angle based on owner's transform
+	/// </summary>
+	void UpdateAngle();
+
+	/// <summary>
+	/// Update Particles count based on whether we are emitting or not
+	/// </summary>
+	void UpdateCount();
 
 public:
 	// --------------------------------------------------------------------- //
 	// Accessors & Mutators
 	// --------------------------------------------------------------------- //
-
 
 };
 }
