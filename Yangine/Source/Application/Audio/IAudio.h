@@ -65,8 +65,14 @@ public:
     /// Plays sound
     /// \param pSound - pointer to a Sound resource to be played
     /// \param volume - int in range -1 - 127. -1 is the default value passed in the function, it doesn't change the volume
-    /// \return true if the sound was successfully played
-	virtual bool PlaySound(ISound* pSound, i8 volume = -1) = 0;
+    /// \return channel the sound is played on
+	virtual int PlaySound(ISound* pSound, i8 volume = -1, i8 loops = 0) = 0;
+
+    /// <summary>
+    ///  Stops the channel
+    /// </summary>
+    /// <param name="channel">channel to stop, default to -1 (stops all channels)</param>
+    virtual bool StopChannel(int channel = -1) = 0;
 
     /// Sets the music volume
     /// \param volume - int in range 0-127 that represents the volume to set

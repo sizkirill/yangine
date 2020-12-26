@@ -159,7 +159,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Source\Application\ApplicationConstants.h" />
-    <ClInclude Include="Source\Application\ApplicationGlobals.h" />
     <ClInclude Include="Source\Application\ApplicationLayer.h" />
     <ClInclude Include="Source\Application\Audio\IAudio.h" />
     <ClInclude Include="Source\Application\Audio\Music\IMusic.h" />
@@ -177,7 +176,6 @@
     <ClInclude Include="Source\Application\Graphics\Textures\ITexture.h" />
     <ClInclude Include="Source\Application\Graphics\Textures\SDLTexture.h" />
     <ClInclude Include="Source\Application\Graphics\Textures\Sprite.h" />
-    <ClInclude Include="Source\Application\Graphics\Viewport.h" />
     <ClInclude Include="Source\Application\Input\IKeyboard.h" />
     <ClInclude Include="Source\Application\Input\IMouse.h" />
     <ClInclude Include="Source\Application\OS\IOpSys.h" />
@@ -189,6 +187,7 @@
     <ClInclude Include="Source\Logic\Actor\Actor.h" />
     <ClInclude Include="Source\Logic\Actor\ActorFactory.h" />
     <ClInclude Include="Source\Logic\Collisions\Collision.h" />
+    <ClInclude Include="Source\Logic\Collisions\CollisionCallbackFactory.h" />
     <ClInclude Include="Source\Logic\Collisions\CollisionSystem.h" />
     <ClInclude Include="Source\Logic\Collisions\ICollisionCalback.h" />
     <ClInclude Include="Source\Logic\Components\Animation\AnimationComponent.h" />
@@ -199,15 +198,11 @@
     <ClInclude Include="Source\Logic\Components\MouseInputListener.h" />
     <ClInclude Include="Source\Logic\Components\MoveComponent.h" />
     <ClInclude Include="Source\Logic\Components\Particle\ParticleEmitterComponent.h" />
-    <ClInclude Include="Source\Logic\Components\Physics\Box2DPhysicsComponent.h" />
-    <ClInclude Include="Source\Logic\Components\Physics\IPhysicsComponent.h" />
     <ClInclude Include="Source\Logic\Components\RotationComponent.h" />
-    <ClInclude Include="Source\Logic\Components\Shapes\RectangleShape.h" />
     <ClInclude Include="Source\Logic\Components\SpriteComponent.h" />
     <ClInclude Include="Source\Logic\Components\TextComponent.h" />
     <ClInclude Include="Source\Logic\Components\TransformComponent.h" />
     <ClInclude Include="Source\Logic\Event\EventDispatcher.h" />
-    <ClInclude Include="Source\Logic\Event\EventListener.h" />
     <ClInclude Include="Source\Logic\Event\Events\CreateActorEvent.h" />
     <ClInclude Include="Source\Logic\Event\Events\DestroyActorEvent.h" />
     <ClInclude Include="Source\Logic\Event\IEvent.h" />
@@ -217,18 +212,13 @@
     <ClInclude Include="Source\Logic\Event\Input\MouseWheelEvent.h" />
     <ClInclude Include="Source\Logic\IGameLayer.h" />
     <ClInclude Include="Source\Logic\Map\TiledMap.h" />
-    <ClInclude Include="Source\Logic\Physics\Box2DAdapters.h" />
-    <ClInclude Include="Source\Logic\Physics\Box2DPhysics.h" />
-    <ClInclude Include="Source\Logic\Physics\IContactListener.h" />
-    <ClInclude Include="Source\Logic\Physics\IPhysicsSimulation.h" />
     <ClInclude Include="Source\Logic\Process\Animation\AnimationProcess.h" />
     <ClInclude Include="Source\Logic\Process\BaseProcess.h" />
     <ClInclude Include="Source\Logic\Process\IProcess.h" />
-    <ClInclude Include="Source\Logic\Process\Kinematic\Rotation.h" />
+    <ClInclude Include="Source\Logic\Process\ProcessFactory.h" />
     <ClInclude Include="Source\Logic\Process\ProcessManager.h" />
     <ClInclude Include="Source\Logic\Process\Timers\DelayProcess.h" />
-    <ClInclude Include="Source\Logic\Process\Timers\TimedProcess.h" />
-    <ClInclude Include="Source\Logic\Scene\UIScene.h" />
+    <ClInclude Include="Source\Logic\Scene\Scene.h" />
     <ClInclude Include="Source\Logic\Scripting\LuaCallback.h" />
     <ClInclude Include="Source\Logic\Scripting\LuaManager.h" />
     <ClInclude Include="Source\Logic\Scripting\LuaState.h" />
@@ -240,21 +230,18 @@
     <ClInclude Include="Source\Utils\Logger.h" />
     <ClInclude Include="Source\Utils\Math.h" />
     <ClInclude Include="Source\Utils\Matrix.h" />
-    <ClInclude Include="Source\Utils\PerlinNoise.h" />
     <ClInclude Include="Source\Utils\Random.h" />
     <ClInclude Include="Source\Utils\Rectangle.h" />
     <ClInclude Include="Source\Utils\StringHash.h" />
-    <ClInclude Include="Source\Utils\ThreadPool\ArrayJob.h" />
-    <ClInclude Include="Source\Utils\ThreadPool\ThreadPool.h" />
     <ClInclude Include="Source\Utils\TinyXml2\tinyxml2.h" />
     <ClInclude Include="Source\Utils\TypeTraits.h" />
     <ClInclude Include="Source\Utils\Typedefs.h" />
     <ClInclude Include="Source\Utils\Vector2.h" />
     <ClInclude Include="Source\Utils\XMLHelpers.h" />
     <ClInclude Include="Source\Views\IView.h" />
+    <ClInclude Include="Source\Views\ViewFactory.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Source\Application\ApplicationGlobals.cpp" />
     <ClCompile Include="Source\Application\ApplicationLayer.cpp" />
     <ClCompile Include="Source\Application\Audio\IAudio.cpp" />
     <ClCompile Include="Source\Application\Audio\Music\IMusic.cpp" />
@@ -272,7 +259,6 @@
     <ClCompile Include="Source\Application\Graphics\Textures\ITexture.cpp" />
     <ClCompile Include="Source\Application\Graphics\Textures\SDLTexture.cpp" />
     <ClCompile Include="Source\Application\Graphics\Textures\Sprite.cpp" />
-    <ClCompile Include="Source\Application\Graphics\Viewport.cpp" />
     <ClCompile Include="Source\Application\Input\IKeyboard.cpp" />
     <ClCompile Include="Source\Application\Input\IMouse.cpp" />
     <ClCompile Include="Source\Application\OS\IOpSys.cpp" />
@@ -284,6 +270,7 @@
     <ClCompile Include="Source\Logic\Actor\Actor.cpp" />
     <ClCompile Include="Source\Logic\Actor\ActorFactory.cpp" />
     <ClCompile Include="Source\Logic\Collisions\Collision.cpp" />
+    <ClCompile Include="Source\Logic\Collisions\CollisionCallbackFactory.cpp" />
     <ClCompile Include="Source\Logic\Collisions\CollisionSystem.cpp" />
     <ClCompile Include="Source\Logic\Components\Animation\AnimationComponent.cpp" />
     <ClCompile Include="Source\Logic\Components\Colliders\ColliderComponent.cpp" />
@@ -293,8 +280,6 @@
     <ClCompile Include="Source\Logic\Components\MouseInputListener.cpp" />
     <ClCompile Include="Source\Logic\Components\MoveComponent.cpp" />
     <ClCompile Include="Source\Logic\Components\Particle\ParticleEmitterComponent.cpp" />
-    <ClCompile Include="Source\Logic\Components\Physics\Box2DPhysicsComponent.cpp" />
-    <ClCompile Include="Source\Logic\Components\Physics\IPhysicsComponent.cpp" />
     <ClCompile Include="Source\Logic\Components\RotationComponent.cpp" />
     <ClCompile Include="Source\Logic\Components\SpriteComponent.cpp" />
     <ClCompile Include="Source\Logic\Components\TextComponent.cpp" />
@@ -309,15 +294,12 @@
     <ClCompile Include="Source\Logic\Event\Input\MouseWheelEvent.cpp" />
     <ClCompile Include="Source\Logic\IGameLayer.cpp" />
     <ClCompile Include="Source\Logic\Map\TiledMap.cpp" />
-    <ClCompile Include="Source\Logic\Physics\Box2DPhysics.cpp" />
-    <ClCompile Include="Source\Logic\Physics\IContactListener.cpp" />
-    <ClCompile Include="Source\Logic\Physics\IPhysicsSimulation.cpp" />
     <ClCompile Include="Source\Logic\Process\Animation\AnimationProcess.cpp" />
     <ClCompile Include="Source\Logic\Process\IProcess.cpp" />
-    <ClCompile Include="Source\Logic\Process\Kinematic\Rotation.cpp" />
+    <ClCompile Include="Source\Logic\Process\ProcessFactory.cpp" />
     <ClCompile Include="Source\Logic\Process\ProcessManager.cpp" />
     <ClCompile Include="Source\Logic\Process\Timers\DelayProcess.cpp" />
-    <ClCompile Include="Source\Logic\Scene\UIScene.cpp" />
+    <ClCompile Include="Source\Logic\Scene\Scene.cpp" />
     <ClCompile Include="Source\Logic\Scripting\LuaCallback.cpp" />
     <ClCompile Include="Source\Logic\Scripting\LuaManager.cpp" />
     <ClCompile Include="Source\Logic\Scripting\LuaState.cpp" />
@@ -327,11 +309,11 @@
     <ClCompile Include="Source\Logic\Shapes\RectangleShape.cpp" />
     <ClCompile Include="Source\Utils\Color.cpp" />
     <ClCompile Include="Source\Utils\Logger.cpp" />
-    <ClCompile Include="Source\Utils\PerlinNoise.cpp" />
     <ClCompile Include="Source\Utils\Random.cpp" />
     <ClCompile Include="Source\Utils\TinyXml2\tinyxml2.cpp" />
     <ClCompile Include="Source\Utils\XMLHelpers.cpp" />
     <ClCompile Include="Source\Views\IView.cpp" />
+    <ClCompile Include="Source\Views\ViewFactory.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
