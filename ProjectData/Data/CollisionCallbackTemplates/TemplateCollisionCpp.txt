@@ -1,0 +1,32 @@
+#include "ShipCollisionCallback.h"
+#include <Logic/Components/Colliders/ColliderComponent.h>
+
+
+#pragma warning(push)
+#pragma warning(disable:4307)
+
+template<>
+std::unique_ptr<yang::ICollisionCallback> yang::ICollisionCallback::CreateCollisionCallback<$collision_name::GetHashName()>()
+{ 
+    return std::make_unique<$collision_name>(); 
+};
+
+#pragma warning(pop)
+
+bool $collision_name::Init(tinyxml2::XMLElement* pData)
+{
+    return true;
+}
+
+void $collision_name::OnCollisionStart(yang::ColliderComponent* pFirst, yang::ColliderComponent* pSecond)
+{
+
+}
+
+void $collision_name::OnCollisionEnd(yang::ColliderComponent* pFirst, yang::ColliderComponent* pSecond)
+{
+}
+
+void $collision_name::UpdateCollision(yang::ColliderComponent* pFirst, yang::ColliderComponent* pSecond, float deltaSeconds)
+{
+}

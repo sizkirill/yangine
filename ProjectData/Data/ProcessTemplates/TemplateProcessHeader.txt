@@ -1,0 +1,25 @@
+#pragma once
+/** \file $process_name.h */
+/** Describes $process_name process */
+
+#include <Logic/Process/BaseProcess.h>
+$components_includes
+#include <Utils/StringHash.h>
+#include <string_view>
+
+class $process_nameDescription
+{
+public:
+	$process_nameDescription([[maybe_unused]] yang::IProcess* pOwner) {};
+	void Update(float deltaSeconds, $component_names);
+	bool Init(tinyxml2::XMLElement* pData);
+	bool PostInit($component_names);
+
+	static constexpr std::string_view kName = "$process_name";
+	static constexpr uint32_t kHashName = StringHash32(kName.data());
+
+	static constexpr std::string_view GetName() { return kName; }
+	static constexpr uint32_t GetHashName() { return kHashName; }
+};
+
+using $process_name = yang::BaseProcess<$process_nameDescription, $component_names>;
