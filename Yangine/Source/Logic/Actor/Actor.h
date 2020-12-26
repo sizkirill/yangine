@@ -19,7 +19,6 @@ namespace yang
 {
 	class LuaManager;
     class IView;
-    class Scene;
 
 /** \class Actor */
 /** Represents an object in the game */
@@ -37,7 +36,7 @@ public:
 
 	/// Constructor
     /// \param id - actor unique id
-    Actor(Id id, std::shared_ptr<Scene> pOwner);
+	Actor(Id id);
 
 	/** Default Destructor */
 	~Actor();
@@ -108,7 +107,6 @@ private:
     IView* m_pOwningView;                                               ///< View that owns the actor. Can be null
     std::string m_tag;                                                  ///< Actor name
     uint32_t m_hashTag;
-    std::weak_ptr<Scene> m_pOwnerScene;
 
 	// --------------------------------------------------------------------- //
 	// Private Member Functions
@@ -137,10 +135,6 @@ public:
     /// Get actor's hashed tag
     /// \return actor's hashed tag
     uint32_t GetHashTag() const { return m_hashTag; }
-
-    /// Get actor's owner scene ID
-    /// \return owner scene ID
-    std::shared_ptr<Scene> GetOwnerScene() const { return m_pOwnerScene.lock(); }
 };
 
 // this actually doesn't work right now.

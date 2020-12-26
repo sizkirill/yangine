@@ -1,15 +1,14 @@
 #include "TransformComponent.h"
-
 #include <Utils/TinyXml2/tinyxml2.h>
 #include <Utils/XMLHelpers.h>
 #include <Utils/Logger.h>
-#include <Utils/Random.h>
 
 #include <Logic/Actor/Actor.h>
 #include <Logic/Scripting/LuaManager.h>
 #include <Logic/Components/SpriteComponent.h>
 #include <Logic/Components/TextComponent.h>
 
+#include <Utils/Random.h>
 #include <cassert>
 
 using yang::TransformComponent;
@@ -47,22 +46,22 @@ bool yang::TransformComponent::Init(tinyxml2::XMLElement* pData)
 
     if (pPosition && pPosition->BoolAttribute("random"))
     {
-        auto& rng = Random::GlobalRNG;
+        auto& rng = XorshiftRNG::GlobalRNG;
         float x = rng.FRand(pPosition->FloatAttribute("minX"), pPosition->FloatAttribute("maxX"));
         float y = rng.FRand(pPosition->FloatAttribute("minY"), pPosition->FloatAttribute("maxY"));
         m_position = FVec2(x, y);
     }
     else
     {
-        m_position = VectorFromXML(pPosition);
+        m_position = FVectorFromXML(pPosition);
     }
 
-	XMLElement* pRotation = pData->FirstChildElement("RotationPoint");
-	m_rotationPoint = VectorFromXML(pRotation);
+	m_rotationPoint = FVectorFromXML(pData->FirstChildElement("RotationPoint"));
+	m_scalePoint = FVectorFromXML(pData->FirstChildElement("ScalePoint"));
 
-    if (pRotation && pRotation->BoolAttribute("random"))
+    if (pData->BoolAttribute("random"))
     {
-        m_rotationAngle = Random::GlobalRNG.FRand(pRotation->FloatAttribute("min"), pRotation->FloatAttribute("max"));
+        m_rotationAngle = XorshiftRNG::GlobalRNG.FRand(pData->FloatAttribute("min"), pData->FloatAttribute("max"));
     }
     else
     {
@@ -126,7 +125,7 @@ void yang::TransformComponent::RegisterToLua(const LuaManager& manager)
 void yang::TransformComponent::UpdateTransformMatrix()
 {
 	m_transformMatrix = Matrix();
-	m_transformMatrix.Scale(m_scale, m_rotationPoint - m_position).Rotate(m_rotationAngle, m_rotationPoint).Translate(m_position);
+	m_transformMatrix.Scale(m_scale, m_scalePoint).Rotate(m_rotationAngle, m_rotationPoint).Translate(m_position);
 }
 
 yang::Matrix& yang::TransformComponent::GetCurrentTransform()
@@ -192,6 +191,12 @@ void yang::TransformComponent::Scale(float amount)
 	m_transformNeedUpdate = m_transformNeedUpdate || !Math::IsExtremelyClose(amount,1.f);
 
 	m_scale *= amount;
+}
+
+void yang::TransformComponent::Scale(float amount, FVec2 center)
+{
+	m_scalePoint = center;
+	Scale(amount);
 }
 
 void yang::TransformComponent::Scale(FVec2 amount)

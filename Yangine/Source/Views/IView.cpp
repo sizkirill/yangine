@@ -25,13 +25,3 @@ void yang::IView::DetachActor()
 {
     m_pActor.reset();
 }
-
-yang::Id yang::IView::GetActorId() const
-{
-    if (m_pActor)
-    {
-        return m_pActor->GetId();
-    }
-
-    return kInvalidValue<Id>;
-}

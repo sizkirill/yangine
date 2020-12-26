@@ -21,6 +21,7 @@ public:
     virtual ~CircleShape() = default;
     virtual bool Init(tinyxml2::XMLElement* pData) override;
     virtual bool Render(IGraphics* pGraphics) override;
+    virtual bool DebugDraw(IGraphics* pGraphics) override;
     virtual bool Collide(IShape* pOther) override;
     virtual bool Collide(CircleShape* pOther) override;
     virtual bool Collide(RectangleShape* pOther) override;
@@ -32,17 +33,13 @@ public:
 
     static constexpr const char* GetName() { return "CircleShape"; }
     static constexpr uint32_t GetHashName() { return StringHash32(GetName()); }
-
-#ifdef DEBUG
-    virtual bool DebugDraw(IGraphics* pGraphics) override;
-#endif
 protected:
     FVec2 m_localCenter;
     FVec2 m_center;
     float m_radius;
 public:
-    virtual FVec2 GetCenter() const { return m_localCenter + m_center; }
-    float GetRadius() const { return m_radius; }
+    FVec2 GetCenter() const { return m_localCenter + m_center; }
+    float GetRadiusSqrd() const { return m_radius; }
 
     void SetCenter(FVec2 center) { m_center = center; }
     void SetRadius(float radius) { m_radius = radius; }

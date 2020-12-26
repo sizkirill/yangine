@@ -1,7 +1,6 @@
 #include "ProcessManager.h"
 #include <Utils/Logger.h>
 #include <Logic/Actor/Actor.h>
-#include <Logic/Scene/Scene.h>
 
 using yang::ProcessManager;
 
@@ -13,11 +12,6 @@ ProcessManager::ProcessManager()
 ProcessManager::~ProcessManager()
 {
     AbortAllProcesses();
-}
-
-void yang::ProcessManager::Init(std::shared_ptr<Scene> pOwner)
-{
-    m_pOwnerScene = pOwner;
 }
 
 void yang::ProcessManager::UpdateProcesses(float deltaSeconds)
@@ -85,9 +79,9 @@ void yang::ProcessManager::UpdateProcesses(float deltaSeconds)
 
     for (size_t i = 0; i < m_pProcesses.size(); ++i)
     {
-        auto pProcess = m_pProcesses[i];
+        auto& pProcess = m_pProcesses[i];
         IProcess::State state = pProcess->GetState();
-        std::pair<std::shared_ptr<IProcess>, size_t> processIndexPair = { nullptr, 0 };
+        std::pair<IProcess*, size_t> processIndexPair = { nullptr, 0 };
 
         switch (state)
         {
@@ -98,13 +92,13 @@ void yang::ProcessManager::UpdateProcesses(float deltaSeconds)
         }
         case IProcess::State::kUninitialized:
         {
-            if (pProcess->PostInit())
+            if (pProcess->Init())
             {
                 pProcess->Resume();
             }
             else
             {
-                processIndexPair.first = pProcess;
+                processIndexPair.first = pProcess.get();
                 processIndexPair.second = i;
             }
             break;
@@ -117,21 +111,21 @@ void yang::ProcessManager::UpdateProcesses(float deltaSeconds)
             {
                 AttachProcess(pChild);
             }
-            processIndexPair.first = pProcess;
+            processIndexPair.first = pProcess.get();
             processIndexPair.second = i;
             break;
         }
         case IProcess::State::kAborted:
         {
             pProcess->OnAbort();
-            processIndexPair.first = pProcess;
+            processIndexPair.first = pProcess.get();
             processIndexPair.second = i;
             break;
         }
         case IProcess::State::kFailed:
         {
             pProcess->OnFail();
-            processIndexPair.first = pProcess;
+            processIndexPair.first = pProcess.get();
             processIndexPair.second = i;
             break;
         }
@@ -156,9 +150,10 @@ void yang::ProcessManager::AttachProcess(std::shared_ptr<IProcess> pProcess)
 
 void yang::ProcessManager::AbortProcessesOnActor(Id actorId)
 {
+    LOG_ONCE(TODO, TimeComplexity, "Think how to make it O(1)");
     for (size_t i = 0; i < m_pProcesses.size(); ++i)
     {
-        auto pOwner = m_pProcesses[i]->GetOwner();
+        Actor* pOwner = m_pProcesses[i]->GetOwner();
         if (pOwner && pOwner->GetId() == actorId)
         {
             RemoveProcess(i);
@@ -178,17 +173,6 @@ void yang::ProcessManager::AbortAllProcesses()
         }
     }
     m_pProcesses.clear();
-}
-
-std::shared_ptr<yang::IProcess> yang::ProcessManager::CreateProcess(std::shared_ptr<yang::Actor> pOwner, tinyxml2::XMLElement* pData)
-{
-    if (auto pScene = m_pOwnerScene.lock(); pScene != nullptr)
-    {
-        return pScene->CreateProcess(pOwner, pData);
-    }
-
-    LOG(Warning, "Owner scene of process manager was invalid during creation of process");
-    return nullptr;
 }
 
 void yang::ProcessManager::RemoveProcess(size_t index)

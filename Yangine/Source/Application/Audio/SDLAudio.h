@@ -44,10 +44,8 @@ public:
 	/// Plays sound
 	/// \param pSound - pointer to SDL Sound resource to be played
 	/// \param volume - int in range -1 - 127. -1 is the default value passed in the function, it doesn't change the volume
-	/// \return channel the sound is played on
-	virtual int PlaySound(ISound* pSound, i8 volume = -1, i8 loops = 0) override final;
-
-	virtual bool StopChannel(int channel = -1);
+	/// \return true if the sound was successfully played
+	virtual bool PlaySound(ISound* pSound, i8 volume = -1) override final;
 
     // TODO: Do tests of the below functions
 

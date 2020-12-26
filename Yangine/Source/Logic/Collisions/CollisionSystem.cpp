@@ -1,12 +1,6 @@
 #include "CollisionSystem.h"
 #include <Logic/Components/Colliders/ColliderComponent.h>
 #include <Logic/Actor/Actor.h>
-#include <Logic/Scene/Scene.h>
-
-void yang::CollisionSystem::Init(std::shared_ptr<Scene> pOwner)
-{
-    m_pOwnerScene = pOwner;
-}
 
 void yang::CollisionSystem::RegisterCollider(int layer, ColliderComponent* pComponent)
 {
@@ -30,20 +24,8 @@ void yang::CollisionSystem::Update(float deltaSeconds)
         if (!collisionPair.first->Collide(collisionPair.second))
         {
             pCollision->OnCollisionExit();
-
-            auto& firstActorActiveCollisions = m_activeCollisionsByActor[collisionPair.first];
-            auto& secondActorActiveCollisions = m_activeCollisionsByActor[collisionPair.second];
-
-            if (auto fIt = std::find(firstActorActiveCollisions.begin(), firstActorActiveCollisions.end(), pCollision.get()); fIt != firstActorActiveCollisions.end())
-            {
-                firstActorActiveCollisions.erase(fIt);
-            }
-
-            if (auto sIt = std::find(secondActorActiveCollisions.begin(), secondActorActiveCollisions.end(), pCollision.get()); sIt != secondActorActiveCollisions.end())
-            {
-                secondActorActiveCollisions.erase(sIt);
-            }
-
+            m_activeCollisionsByActor.erase(collisionPair.first);
+            m_activeCollisionsByActor.erase(collisionPair.second);
             it = m_activeCollisions.erase(it);
             continue;
         }
@@ -58,11 +40,7 @@ void yang::CollisionSystem::Update(float deltaSeconds)
         {
             for (size_t j = i + 1; j < colliders.size(); ++j)
             {
-                //if (colliders[i]->GetOwner() == colliders[j]->GetOwner())
-                //{
-                //    continue;
-                //}
-                if (colliders[i] == colliders[j])
+                if (colliders[i]->GetOwner() == colliders[j]->GetOwner())
                 {
                     continue;
                 }
@@ -93,9 +71,7 @@ void yang::CollisionSystem::ClearCollisionsWithActor(yang::Actor* pActor)
     //      O(l) time complexity , where l is number of layers
     for (auto& [layer, colliders] : m_colliders)
     {
-        //auto findLambda = [pActor](ColliderComponent* pComponent) {return pComponent->GetOwner() == pActor; };
-        auto findLambda = [pActor](ColliderComponent* pComponent) {return pActor->GetComponent<ColliderComponent>() == pComponent; };
-        
+        auto findLambda = [pActor](ColliderComponent* pComponent) {return pComponent->GetOwner() == pActor; };
         // Clear collisions with each found satisfied collider.
         //      Finding all satisfying colliders. Time complexity O(c), where c is number of colliders on that collision layer
         //              + cost of erasing (up to O(c))
@@ -105,8 +81,6 @@ void yang::CollisionSystem::ClearCollisionsWithActor(yang::Actor* pActor)
         {
             // O(k^2) - where k is an average number of active collisions on each collider
             ClearCollisionsWithCollider(*it);
-
-            // Do the swap trick perhaps?
             it = colliders.erase(it);
             it = std::find_if(it, colliders.end(), findLambda);
         }
@@ -138,15 +112,8 @@ void yang::CollisionSystem::ClearCollisionsWithCollider(ColliderComponent* pColl
         
         // Find that collision in a second collider's active collisions and erase it from there
         //      O(k), where k is a number of active collisions on a second collider
-
-        // The if statement below was added to "fix" a bug. The bug is still there (some collisions with deleted actors are still somewhere here in memory and don't get deleted)
-        //     I assumed that the line below would always be valid without an if statement, but apparently it's not. It has something with how colliders are cleared from the collision system
-        //        when the actor is destroyed
-        //     TODO(ksizykh): actually fix the bug
-        if (auto it = std::find(secondActorCollisions.begin(), secondActorCollisions.end(), pCollision); it != secondActorCollisions.end())
-        {
-            secondActorCollisions.erase(it);
-        }
+        auto it = std::find(secondActorCollisions.begin(), secondActorCollisions.end(), pCollision);
+        it = secondActorCollisions.erase(it);
 
         // find that collision in all active collisions and erase it.
         //     O(1)
@@ -154,25 +121,5 @@ void yang::CollisionSystem::ClearCollisionsWithCollider(ColliderComponent* pColl
         {
             m_activeCollisions.erase(it);
         }
-
-
-        auto recentIt = std::find(m_recentCollisions.begin(), m_recentCollisions.end(), pCollision);
-        while (recentIt != m_recentCollisions.end())
-        {
-            recentIt = m_recentCollisions.erase(recentIt);
-        }
     }
-
-    m_activeCollisionsByActor.erase(pCollider);
-}
-
-std::unique_ptr<yang::ICollisionCallback> yang::CollisionSystem::CreateCollisionCallback(tinyxml2::XMLElement* pData)
-{
-    if (auto pScene = m_pOwnerScene.lock(); pScene != nullptr)
-    {
-        return pScene->CreateCollisionCallback(pData);
-    }
-    
-    LOG(Warning, "Owner scene of collision system was invalid during creation of collision callback");
-    return nullptr;
 }

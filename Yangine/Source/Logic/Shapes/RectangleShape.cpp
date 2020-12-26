@@ -32,8 +32,8 @@ yang::RectangleShape::RectangleShape(tinyxml2::XMLElement* pData)
 bool yang::RectangleShape::Init(tinyxml2::XMLElement* pData)
 {
     using namespace tinyxml2;
-    m_localCenter = VectorFromXML(pData->FirstChildElement("Center"));
-    m_dimensions = VectorFromXML(pData->FirstChildElement("Dimensions"));
+    m_localCenter = FVectorFromXML(pData->FirstChildElement("Center"));
+    m_dimensions = FVectorFromXML(pData->FirstChildElement("Dimensions"));
     
     XMLElement* pColor = pData->FirstChildElement("Color");
 
@@ -50,12 +50,10 @@ bool yang::RectangleShape::Render(IGraphics* pGraphics)
     return pGraphics->FillRect(GetRect(), m_color);
 }
 
-#ifdef DEBUG
 bool yang::RectangleShape::DebugDraw(IGraphics* pGraphics)
 {
     return pGraphics->DrawRect(GetRect(), m_color);
 }
-#endif
 
 bool yang::RectangleShape::Collide(IShape* pOther)
 {

@@ -5,8 +5,6 @@
 using yang::IGraphics;
 
 IGraphics::IGraphics()
-	:m_cameraRotation(0)
-	,m_cameraScaleFactors(1.f,1.f)
 {
 	
 }
@@ -62,6 +60,18 @@ bool yang::IGraphics::FillTriangle(FVec2 points[3], const IColor& color)
 }
 
 bool yang::IGraphics::DrawSprite(std::shared_ptr<Sprite> pSprite, const IRect& dst)
+{
+	if (!pSprite)
+		return false;
+
+	if (auto pTexture = pSprite->GetSourceTexture().lock(); pTexture != nullptr)
+	{
+		return DrawTexture(pTexture.get(), pSprite->GetSourceRect(), dst, pSprite->GetDrawParams());
+	}
+	return false;
+}
+
+bool yang::IGraphics::DrawSprite(std::shared_ptr<Sprite> pSprite, const FRect& dst)
 {
 	if (!pSprite)
 		return false;

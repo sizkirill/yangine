@@ -11,7 +11,6 @@
 //! \namespace yang Contains all Yangine code
 namespace yang
 {
-	class Scene;
 /** \class ProcessManager */
 /** Class that is responsible for updating, attaching and destroying processes. Order of processes is not preserved when processes are removed */
 class ProcessManager
@@ -31,8 +30,6 @@ public:
 	/** Default Destructor */
 	~ProcessManager();
 
-	void Init(std::shared_ptr<Scene> pOwner);
-
     /// Update all active processes
     /// \param deltaSeconds - amount of seconds passed since last frame
     void UpdateProcesses(float deltaSeconds);
@@ -47,14 +44,11 @@ public:
 
     /// Aborts all processes
     void AbortAllProcesses();
-
-	std::shared_ptr<IProcess> CreateProcess(std::shared_ptr<yang::Actor> pOwner, tinyxml2::XMLElement* pData);
 private:
 	// --------------------------------------------------------------------- //
 	// Private Member Variables
 	// --------------------------------------------------------------------- //
     std::vector<std::shared_ptr<IProcess>> m_pProcesses;    ///< Vector of all processes
-	std::weak_ptr<Scene> m_pOwnerScene;
 
 	// --------------------------------------------------------------------- //
 	// Private Member Functions

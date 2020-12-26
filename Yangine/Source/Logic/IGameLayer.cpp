@@ -1,31 +1,26 @@
 #include "IGameLayer.h"
 #include <Logic/Actor/Actor.h>
 #include <Application/ApplicationLayer.h>
-#include <Application/Resources/ResourceCache.h>
-
+#include <Logic/Physics/IContactListener.h>
 #include <Logic/Components/TransformComponent.h>
 #include <Logic/Components/SpriteComponent.h>
 #include <Logic/Components/MoveComponent.h>
 #include <Logic/Components/ControllerComponent.h>
 #include <Logic/Components/MouseInputListener.h>
+#include <Logic/Components/Physics/Box2DPhysicsComponent.h>
 #include <Logic/Components/TextComponent.h>
 #include <Logic/Components/Animation/AnimationComponent.h>
 #include <Logic/Components/RotationComponent.h>
 #include <Logic/Components/Colliders/ColliderComponent.h>
 #include <Logic/Components/Kinematic/KinematicComponent.h>
 #include <Logic/Components/Particle/ParticleEmitterComponent.h>
-
-#include <Logic/Process/Timers/DelayProcess.h>
-#include <Logic/Process/Animation/AnimationProcess.h>
-
 #include <Logic/Collisions/CollisionSystem.h>
 #include <Logic/Event/Events/CreateActorEvent.h>
 #include <Logic/Event/Events/DestroyActorEvent.h>
 #include <Logic/Event/EventDispatcher.h>
+#include <Logic/Map/TiledMap.h>
 
 #include <Utils/Random.h>
-#include <Utils/StringHash.h>
-#include <Utils/TinyXml2/tinyxml2.h>
 
 // Still need it here because of
 #include <Lua/lua.hpp>
@@ -38,24 +33,46 @@ bool yang::IGameLayer::Init(const yang::ApplicationLayer& app)
 {
 	LOG_CATEGORY(Lua, 0, Cyan, Light);
 
-    EventDispatcher::Get()->AddEventListener(DestroyActorEvent::kEventId, [this](IEvent* pEvent)
+    m_pMap = std::make_shared<TiledMap>();
+    m_pPhysics = app.GetPhysics();
+
+    for (auto& pView : m_pViews)
+    {
+        if (!pView->Init(app))
+        {
+            return false;
+        }
+    }
+
+    m_destroyActorEventListener.Register([this](IEvent* pEvent)
         {
             DestroyActor(static_cast<DestroyActorEvent*>(pEvent)->GetActorId());
         });
-
-    EventDispatcher::Get()->AddEventListener(CreateActorEvent::kEventId, [this](IEvent* pEvent)
+    m_createActorEventListener.Register([this](IEvent* pEvent)
         {
             CreateActorEvent* pCreateActorEvent = static_cast<CreateActorEvent*>(pEvent);
             auto pFilepath = pCreateActorEvent->GetXmlFilepath();
             auto maybeLocation = pCreateActorEvent->GetSpawnPosition();
-            SpawnActor(pFilepath, {}, maybeLocation);
+            SpawnActor(pFilepath, maybeLocation);
         });
+    //EventDispatcher::Get()->AddEventListener(DestroyActorEvent::kEventId, [this](IEvent* pEvent)
+    //    {
+    //        DestroyActor(static_cast<DestroyActorEvent*>(pEvent)->GetActorId());
+    //    });
 
-    m_viewFactory.Init(app);
-    m_processFactory.Init();
+    //EventDispatcher::Get()->AddEventListener(CreateActorEvent::kEventId, [this](IEvent* pEvent)
+    //    {
+    //        CreateActorEvent* pCreateActorEvent = static_cast<CreateActorEvent*>(pEvent);
+    //        auto pFilepath = pCreateActorEvent->GetXmlFilepath();
+    //        auto maybeLocation = pCreateActorEvent->GetSpawnPosition();
+    //        SpawnActor(pFilepath, maybeLocation);
+    //    });
 
+    m_pCollisionSystem.reset(new CollisionSystem);
     RegisterComponents();
-    RegisterProcesses();
+
+    m_pContactListener = new IContactListener(this);
+    m_pPhysics->SetContactListener(m_pContactListener);
 
 	if (!LuaState::GetInstance())
 	{
@@ -69,143 +86,112 @@ bool yang::IGameLayer::Init(const yang::ApplicationLayer& app)
     return true;
 }
 
-void yang::IGameLayer::AddView(std::unique_ptr<IView>&& pView, std::optional<uint32_t> sceneIdHint)
+void yang::IGameLayer::AddView(std::unique_ptr<IView> pView)
 {
-    if (sceneIdHint && m_loadedScenes.count(*sceneIdHint))
-    {
-        m_loadedScenes[*sceneIdHint]->AddView(std::move(pView));
-        return;
-    }
-
-    if (Id id = pView->GetActorId(); id != kInvalidValue<Id>)
-    {
-        if (auto pScene = FindSceneByActorId(id); pScene != nullptr)
-        {
-            pScene->AddView(std::move(pView));
-        }
-        else
-        {
-            LOG(Error, "Owner scene for actor ID: %d was not found", id);
-        }
-    }
-    else
-    {
-        LOG(Error, "Trying to add view with invalid actor ID. Unable to find appropriate scene");
-    }
+    pView->SetIndex(m_pViews.size());
+    m_pViews.emplace_back(std::move(pView));
 }
 
 void yang::IGameLayer::Update(float deltaSeconds)
 {
+    for (auto& pActor : m_actorsToSpawn)
+    {
+        m_actors.emplace(pActor->GetId(), pActor);
+    }
+    m_actorsToSpawn.clear();
+
+    for (auto& pView : m_pViews)
+    {
+        pView->UpdateInput();
+    }
+
+    // Consider that there might be a better place in the order of operations for this
     EventDispatcher::Get()->ProcessEvents();
+    m_processManager.UpdateProcesses(deltaSeconds);
 
-    for (auto pScene : m_scenes[(size_t)SceneStatus::kActive])
+    for (auto& pActor : m_actors)
     {
-        pScene->Update(deltaSeconds);
+        pActor.second->Update(deltaSeconds);
     }
 
-    m_pCurrentScene->Render();
+    // When to update?
+    m_pPhysics->Update(deltaSeconds);
+    m_pCollisionSystem->Update(deltaSeconds);
+    RespondToCollisions();
 
-    for (auto pScene : m_scenes[(size_t)SceneStatus::kUnload])
+    for (auto& pView : m_pViews)
     {
-        m_loadedScenes.erase(pScene->GetHashName());
-        pScene->Cleanup();
+        pView->ViewScene();
     }
-    m_scenes[(size_t)SceneStatus::kUnload].clear();
+
+    for (Id id : m_actorsToKill)
+    {
+        auto pActorIdPair = m_actors.find(id);
+        if (pActorIdPair != m_actors.end())
+        {
+            auto pActorView = pActorIdPair->second->GetOwningView();
+
+            if (pActorView)
+            {
+                pActorView->DetachActor();
+                DeleteView(pActorView);
+            }
+            m_pCollisionSystem->ClearCollisionsWithActor(pActorIdPair->second.get());
+            m_processManager.AbortProcessesOnActor(id);
+            m_actors.erase(id);
+        }
+    }
+    m_actorsToKill.clear();
+
+    m_recentCollisions.clear();
 }
 
 void yang::IGameLayer::Cleanup()
 {
-    for (auto& sceneContainer : m_scenes)
+    m_recentCollisions.clear();
+    m_pPhysics->SetContactListener(nullptr);
+    delete m_pContactListener;
+    
+    for (auto& pView : m_pViews)
     {
-        for (auto pScene : sceneContainer)
+        pView->DetachActor();
+        pView.reset();
+    }
+
+    m_actors.clear();
+
+    m_pMap = nullptr;
+}
+
+void yang::IGameLayer::AddProcess(std::shared_ptr<IProcess> pProcess)
+{
+    m_processManager.AttachProcess(pProcess);
+}
+
+std::shared_ptr<yang::Actor> yang::IGameLayer::SpawnActor(const char* filepath, std::optional<FVec2> maybeLocation)
+{
+    auto pActor = m_actorFactory.CreateActor(filepath);
+
+    if (pActor)
+    {
+        m_actorsToSpawn.emplace_back(pActor);
+        if (auto pTransform = pActor->GetComponent<TransformComponent>(); pTransform && maybeLocation)
         {
-            pScene->Cleanup();
-        }
-
-        sceneContainer.clear();
-    }
-    m_loadedScenes.clear();
-}
-
-void yang::IGameLayer::AddProcess(std::shared_ptr<IProcess> pProcess, std::optional<uint32_t> sceneIdHint)
-{
-    if (sceneIdHint && m_loadedScenes.count(*sceneIdHint))
-    {
-        m_loadedScenes[*sceneIdHint]->AddProcess(pProcess);
-        return;
-    }
-
-    if (Id id = pProcess->GetOwner()->GetId(); id != kInvalidValue<Id>)
-    {
-        if (auto pScene = FindSceneByActorId(id); pScene != nullptr)
-        {
-            pScene->AddProcess(pProcess);
-        }
-        else
-        {
-            LOG(Error, "Owner scene for actor ID: %d was not found", id);
+            pTransform->SetPosition(*maybeLocation);
         }
     }
-    else
-    {
-        LOG(Error, "Trying to add process with invalid actor ID. Unable to find appropriate scene");
-    }
+
+    return pActor;
 }
 
-std::shared_ptr<yang::Actor> yang::IGameLayer::SpawnActor(const char* filepath, std::optional<uint32_t> sceneIdHint, std::optional<FVec2> maybeLocation)
+void yang::IGameLayer::DestroyActor(Id actorId)
 {
-    if (sceneIdHint && m_loadedScenes.count(*sceneIdHint))
-    {
-        return m_loadedScenes[*sceneIdHint]->SpawnActor(filepath, maybeLocation);
-    }
-
-    if (m_pCurrentScene)
-    {
-        return m_pCurrentScene->SpawnActor(filepath, maybeLocation);
-    }
-    else
-    {
-        LOG(Error, "No current scene selected, nowhere to spawn actor");
-    }
-
-    return nullptr;
+    m_actorsToKill.emplace_back(actorId);
 }
 
-std::shared_ptr<yang::Actor> yang::IGameLayer::SpawnActor(std::shared_ptr<IResource> pResource, std::optional<uint32_t> sceneIdHint, std::optional<FVec2> maybeLocation)
+void yang::IGameLayer::NotifyContact(Actor* pActorA, Actor* pActorB, bool isOverlap, ContactState state)
 {
-    if (sceneIdHint && m_loadedScenes.count(*sceneIdHint))
-    {
-        return m_loadedScenes[*sceneIdHint]->SpawnActor(pResource, maybeLocation);
-    }
-
-    if (m_pCurrentScene)
-    {
-        return m_pCurrentScene->SpawnActor(pResource, maybeLocation);
-    }
-    else
-    {
-        LOG(Error, "No current scene selected, nowhere to spawn actor");
-    }
-
-    return nullptr;
-}
-
-void yang::IGameLayer::DestroyActor(Id actorId, std::optional<uint32_t> sceneIdHint)
-{
-    if (sceneIdHint && m_loadedScenes.count(*sceneIdHint))
-    {
-        m_loadedScenes[*sceneIdHint]->DestroyActor(actorId);
-        return;
-    }
-
-    if (auto pScene = FindSceneByActorId(actorId); pScene != nullptr)
-    {
-        pScene->DestroyActor(actorId);
-    }
-    else
-    {
-        LOG(Error, "Owner scene for actor ID: %d was not found", actorId);
-    }
+    m_recentCollisions.emplace_back(pActorA, pActorB, isOverlap, state);
 }
 
 void yang::IGameLayer::RegisterWithLua(lua_State* pState)
@@ -224,13 +210,13 @@ void yang::IGameLayer::RegisterWithLua(lua_State* pState)
 	SpriteComponent::RegisterToLua(m_luaManager);
 	MoveComponent::RegisterToLua(m_luaManager);
 	IGameLayer::RegisterToLua(m_luaManager);
-
+    XorshiftRNG::ExposeToLua(m_luaManager);
 }
 
 void yang::IGameLayer::RegisterToLua(const LuaManager& manager)
 {
 	manager.ExposeToLua("GetActorById", &IGameLayer::GetActorById);
-	manager.ExposeToLua<std::shared_ptr<Actor>(IGameLayer::*)(const char*, std::optional<uint32_t>, std::optional<FVec2>)>("SpawnActor", &IGameLayer::SpawnActor);
+	manager.ExposeToLua("SpawnActor", &IGameLayer::SpawnActor);
 	manager.ExposeToLua("DestroyActorById", &IGameLayer::DestroyActor);
 }
 
@@ -241,324 +227,68 @@ void yang::IGameLayer::RegisterComponents()
     m_actorFactory.RegisterComponent<MoveComponent>();
     m_actorFactory.RegisterComponent<ControllerComponent>();
     m_actorFactory.RegisterComponent<MouseInputListener>();
+    m_actorFactory.RegisterComponent<Box2DPhysicsComponent>(m_pPhysics);
     m_actorFactory.RegisterComponent<TextComponent>();
     m_actorFactory.RegisterComponent<AnimationComponent>();
     m_actorFactory.RegisterComponent<RotationComponent>();
-    m_actorFactory.RegisterComponent<ColliderComponent>();
+    m_actorFactory.RegisterComponent<ColliderComponent>(m_pCollisionSystem.get());
     m_actorFactory.RegisterComponent<KinematicComponent>();
     m_actorFactory.RegisterComponent<ParticleEmitterComponent>();
+    //m_actorFactory.RegisterComponent<RectangleShape>();
 }
 
-void yang::IGameLayer::RegisterProcesses()
+void yang::IGameLayer::DeleteView(IView* pView)
 {
-    m_processFactory.RegisterProcess<DelayProcess>();
-    m_processFactory.RegisterProcess<AnimationProcess>();
+    size_t index = pView->GetIndex();
+    assert(m_pViews[index].get() == pView);
+    DeleteView(index);
 }
 
-void yang::IGameLayer::DeleteView(IView* pView, std::optional<uint32_t> sceneIdHint)
+void yang::IGameLayer::RespondToCollisions()
 {
-    assert(pView);
-    if (sceneIdHint && m_loadedScenes.count(*sceneIdHint))
+    for (auto& [pActorA, pActorB, isOverlap, contactState] : m_recentCollisions)
     {
-        m_loadedScenes[*sceneIdHint]->DeleteView(pView);
-        return;
-    }
-
-    if (Id id = pView->GetActorId(); id != kInvalidValue<Id>)
-    {
-        if (auto pScene = FindSceneByActorId(id); pScene != nullptr)
+        if (isOverlap)
         {
-            pScene->DeleteView(pView);
+            if (contactState == ContactState::kBegin)
+            {
+                pActorA->GetComponent<Box2DPhysicsComponent>()->HandleBeginOverlap(pActorB);
+                pActorB->GetComponent<Box2DPhysicsComponent>()->HandleBeginOverlap(pActorA);
+            }
+            else
+            {
+                pActorA->GetComponent<Box2DPhysicsComponent>()->HandleEndOverlap(pActorB);
+                pActorB->GetComponent<Box2DPhysicsComponent>()->HandleEndOverlap(pActorA);
+            }
         }
         else
         {
-            LOG(Error, "Owner scene for actor ID: %d was not found", id);
-        }
-    }
-    else
-    {
-        LOG(Error, "Trying to delete view with invalid actor ID. Unable to find owning scene");
-    }
-}
-
-std::shared_ptr<yang::Scene> yang::IGameLayer::LoadSceneAndSwitch(std::string_view pathToXml, SceneStatus shouldUnload)
-{
-    auto pScene = LoadScene(pathToXml, SceneStatus::kActive);
-    return SwitchScene(pScene, shouldUnload);
-}
-
-std::shared_ptr<yang::Scene> yang::IGameLayer::SwitchScene(uint32_t sceneId, SceneStatus shouldUnload)
-{
-    if (m_pCurrentScene && m_pCurrentScene->GetHashName() == sceneId)
-    {
-        return m_pCurrentScene;
-    }
-
-    if (!m_loadedScenes.count(sceneId))
-    {
-        LOG(Error, "Trying to switch to a scene that is not in a loaded list. Scene ID: %d", sceneId);
-        return nullptr;
-    }
-
-    auto pScene = FindScene(sceneId);
-
-    auto& pausedScenes = m_scenes[(size_t)SceneStatus::kPaused];
-    auto pSceneIt = std::find(pausedScenes.begin(), pausedScenes.end(), pScene);
-
-    if (pSceneIt != pausedScenes.end())
-    {
-        (*pSceneIt)->OnSceneResume();
-        m_scenes[(size_t)SceneStatus::kActive].push_back(pScene);
-        std::iter_swap(pSceneIt, pausedScenes.end() - 1);
-        pausedScenes.pop_back();
-    }
-
-    if (m_pCurrentScene)
-    {
-        switch (shouldUnload)
-        {
-        case SceneStatus::kActive:
-        {
-            break;
-        }
-        case SceneStatus::kPaused:
-        {
-            PauseScene(m_pCurrentScene);
-            break;
-        }
-        case SceneStatus::kUnload:
-        {
-            UnloadScene(m_pCurrentScene);
-            break;
-        }
-        default:
-        {
-            LOG(Error, "Reached default in IGameLayer::SwitchScene, SceneStatus was %d", (int)(shouldUnload));
-            break;
-        }
+            if (contactState == ContactState::kBegin)
+            {
+                pActorA->GetComponent<Box2DPhysicsComponent>()->HandleBeginCollision(pActorB);
+                pActorB->GetComponent<Box2DPhysicsComponent>()->HandleBeginCollision(pActorA);
+            }
+            else
+            {
+                pActorA->GetComponent<Box2DPhysicsComponent>()->HandleEndCollision(pActorB);
+                pActorB->GetComponent<Box2DPhysicsComponent>()->HandleEndCollision(pActorA);
+            }
         }
     }
 
-    m_pCurrentScene = pScene;
-
-    return m_pCurrentScene;
+    m_recentCollisions.clear();
 }
 
-std::shared_ptr<yang::Scene> yang::IGameLayer::SwitchScene(std::shared_ptr<Scene> pScene, SceneStatus shouldUnload)
+void yang::IGameLayer::DeleteView(size_t index)
 {
-#ifdef DEBUG
-    if (m_pCurrentScene && (m_pCurrentScene == pScene))
-    {
-        return m_pCurrentScene;
-    }
-
-    if (m_pCurrentScene && (m_pCurrentScene->GetHashName() == pScene->GetHashName()))
-    {
-        LOG(Error, "Scene hash names are equivalent, but pointers are different. Scenes should have unique names, so something went wrong. Scene names: %s, %s", m_pCurrentScene->GetName().data(), pScene->GetName().data());
-        return nullptr;
-    }
-#endif
-
-    return SwitchScene(pScene->GetHashName(), shouldUnload);
+    assert(index < m_pViews.size());
+    std::swap(m_pViews[index], m_pViews[m_pViews.size() - 1]);
+    m_pViews[index]->SetIndex(index);
+    m_pViews.pop_back();
+    
 }
 
-std::shared_ptr<yang::Scene> yang::IGameLayer::LoadScene(std::string_view pathToXml, SceneStatus initialStatus)
+yang::Actor* yang::IGameLayer::GetActorById(Id id) const
 {
-    using namespace tinyxml2;
-
-    assert((size_t)initialStatus < (size_t)SceneStatus::kMaxStatus);
-
-    auto pResource = ResourceCache::Get()->Load<IResource>(pathToXml.data());
-
-    XMLDocument doc;
-    XMLError error = doc.Parse(reinterpret_cast<const char*>(pResource->GetData().data()), pResource->GetData().size());
-
-    if (error != tinyxml2::XML_SUCCESS)
-    {
-        LOG(Error, "Failed to load scene: %s -- %s", pResource->GetName().c_str(), XMLDocument::ErrorIDToName(error));
-        return nullptr;
-    }
-
-    // Loaded the file! Lets grab the node and pass it to an actor
-    XMLElement* pRoot = doc.RootElement();
-    const char* name = pRoot->Attribute("name");
-    if (!name)
-    {
-        LOG(Error, "Scene need to have a name");
-        return nullptr;
-    }
-
-    uint32_t hashName = StringHash32(name);
-    if (m_loadedScenes.count(hashName))
-    {
-        return FindScene(hashName);
-    }
-
-    // Check if the id is in the map
-    auto createItr = m_sceneCreatorMap.find(hashName);
-    if (createItr == m_sceneCreatorMap.end())
-    {
-        LOG(Error, "No associated creation function for Scene ID %d", hashName);
-        return nullptr;
-    }
-
-    auto pScene = createItr->second(*this);
-
-    if (pScene == nullptr)
-    {
-        LOG(Error, "Failed to create Scene (ID: %d)", hashName);
-        return nullptr;
-    }
-
-    pScene->Init(pRoot);
-    pScene->OnSceneLoad();
-    m_loadedScenes.emplace(pScene->GetHashName(), pScene);
-
-    if (initialStatus == SceneStatus::kActive)
-    {
-        pScene->OnSceneResume();
-    }
-
-    m_scenes[(size_t)initialStatus].push_back(pScene);
-    return pScene;
-}
-
-std::shared_ptr<yang::Scene> yang::IGameLayer::FindScene(uint32_t sceneId)
-{
-    if (auto sceneIt = m_loadedScenes.find(sceneId); sceneIt != m_loadedScenes.end())
-    {
-        return sceneIt->second;
-    }
-
-    return nullptr;
-}
-
-void yang::IGameLayer::PauseScene(uint32_t sceneId)
-{
-    if (!m_loadedScenes.count(sceneId))
-    {
-        LOG(Error, "Trying to find a scene with scene ID: %d, but it is not in a loaded set", sceneId);
-        return;
-    }
-
-    auto& activeScenes = m_scenes[(size_t)SceneStatus::kActive];
-    auto pSceneIt = std::find_if(activeScenes.begin(), activeScenes.end(), [sceneId](auto pScene)
-        {
-            return pScene->GetHashName() == sceneId;
-        });
-
-    if (pSceneIt == activeScenes.end())
-    {
-        LOG(Warning, "Trying to pause not active scene. Scene ID: %d", sceneId);
-        return;
-    }
-
-    (*pSceneIt)->OnScenePause();
-
-    m_scenes[(size_t)SceneStatus::kPaused].push_back(*pSceneIt);
-    std::iter_swap(pSceneIt, activeScenes.end() - 1);
-    activeScenes.pop_back();
-}
-
-void yang::IGameLayer::PauseScene(std::shared_ptr<Scene> pScene)
-{
-    PauseScene(pScene->GetHashName());
-}
-
-void yang::IGameLayer::UnloadScene(uint32_t sceneId)
-{
-    auto pSceneIt = m_scenes[0].begin();
-    auto pSceneContainerIt = std::find_if(m_scenes.begin(), m_scenes.end() - 1,
-        [sceneId, &pSceneIt](auto& sceneContainer)
-        {
-            pSceneIt = std::find_if(sceneContainer.begin(), sceneContainer.end(),
-                [sceneId](auto pScene)
-                {
-                    return pScene->GetHashName() == sceneId;
-                });
-            return pSceneIt != sceneContainer.end();
-        });
-
-    if (pSceneContainerIt == m_scenes.end() - 1)
-    {
-        LOG(Error, "Internal engine error. Trying to unload a scene ID: %d, but it was not found", sceneId);
-        return;
-    }
-
-    (*pSceneIt)->OnSceneUnload();
-
-    m_scenes[(size_t)SceneStatus::kUnload].push_back(*pSceneIt);
-    std::iter_swap(pSceneIt, pSceneContainerIt->end() - 1);
-    pSceneContainerIt->pop_back();
-}
-
-void yang::IGameLayer::UnloadScene(std::shared_ptr<Scene> pScene)
-{
-    UnloadScene(pScene->GetHashName());
-}
-
-void yang::IGameLayer::UnloadScenes()
-{
-    for (auto pScene : m_scenes[(size_t)SceneStatus::kUnload])
-    {
-        size_t erasedCount = m_loadedScenes.erase(pScene->GetHashName());
-
-        if (erasedCount == 0)
-        {
-            LOG(Error, "Internal engine error. Scene: %s ID: %d was not found in loaded list", pScene->GetName().data(), pScene->GetHashName());
-        }
-
-        pScene->OnSceneUnload();
-        pScene->Cleanup();
-    }
-
-    m_scenes[(size_t)SceneStatus::kUnload].clear();
-}
-
-void yang::IGameLayer::RegisterSceneCreator(uint32_t id, SceneFunction pFunction)
-{
-    m_sceneCreatorMap[id] = pFunction;
-}
-
-std::shared_ptr<yang::Scene> yang::IGameLayer::FindSceneByActorId(Id id) const
-{
-    for (auto [sceneId, pScene] : m_loadedScenes)
-    {
-        if (pScene->HasActor(id))
-        {
-            return pScene;
-        }
-    }
-
-    return nullptr;
-}
-
-std::unordered_map<yang::Id, std::shared_ptr<yang::Actor>>& yang::IGameLayer::GetActors(std::optional<uint32_t> sceneIdHint)
-{
-    if (sceneIdHint && m_loadedScenes.count(*sceneIdHint))
-    {
-        return m_loadedScenes.at(*sceneIdHint)->GetActors();
-    }
-
-    assert(m_pCurrentScene != nullptr);
-    return m_pCurrentScene->GetActors();
-}
-
-std::shared_ptr<yang::Actor> yang::IGameLayer::GetActorById(Id id, std::optional<uint32_t> sceneIdHint) const
-{
-    if (sceneIdHint && m_loadedScenes.count(*sceneIdHint))
-    {
-        return m_loadedScenes.at(*sceneIdHint)->GetActorById(id);
-    }
-
-    if (auto pScene = FindSceneByActorId(id); pScene != nullptr)
-    {
-        return pScene->GetActorById(id);
-    }
-    else
-    {
-        LOG(Error, "Owner scene for actor ID: %d was not found", id);
-    }
-
-    return nullptr;
+	return m_actors.count(id) ? m_actors.at(id).get() : nullptr;
 }

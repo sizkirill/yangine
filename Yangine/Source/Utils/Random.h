@@ -4,11 +4,13 @@
 
 namespace yang
 {
-class Random
+class LuaManager;
+
+class XorshiftRNG
 {
 public:
-    Random(uint64_t seed);
-    Random();
+    XorshiftRNG(uint64_t seed);
+    XorshiftRNG();
 
     template<typename Integer>
     Integer Rand(Integer start, Integer end);
@@ -25,7 +27,14 @@ public:
     template<typename FloatingPoint>
     FloatingPoint FRand();
 
-    static Random GlobalRNG;
+    uint64_t operator()();
+
+    void Seed(uint64_t seed);
+    uint64_t GetState() const { return m_state; }
+
+    static void ExposeToLua(const LuaManager& luaenv);
+
+    static XorshiftRNG GlobalRNG;
 private:
     uint64_t m_state;
 
@@ -33,21 +42,22 @@ private:
 };
 
 template<typename Integer>
-inline Integer Random::Rand(Integer start, Integer end)
+inline Integer XorshiftRNG::Rand(Integer start, Integer end)
 {
     static_assert(std::is_integral_v<Integer>, "Type must be integral");
-    return start + static_cast<Integer>(GetNext()) % (end - start);
+
+    return start + static_cast<Integer>(GetNext() % std::numeric_limits<Integer>::max()) % (end - start);
 }
 
 template<typename Integer>
-inline Integer Random::Rand(Integer max)
+inline Integer XorshiftRNG::Rand(Integer max)
 {
     static_assert(std::is_integral_v<Integer>, "Type must be integral");
     return Rand(static_cast<Integer>(0), max);
 }
 
 template<typename FloatingPoint>
-inline FloatingPoint Random::FRand(FloatingPoint start, FloatingPoint end)
+inline FloatingPoint XorshiftRNG::FRand(FloatingPoint start, FloatingPoint end)
 {
     static_assert(std::is_floating_point_v<FloatingPoint>, "Type must be floating point");
 
@@ -57,14 +67,14 @@ inline FloatingPoint Random::FRand(FloatingPoint start, FloatingPoint end)
 }
 
 template<typename FloatingPoint>
-inline FloatingPoint Random::FRand(FloatingPoint max)
+inline FloatingPoint XorshiftRNG::FRand(FloatingPoint max)
 {
     static_assert(std::is_floating_point_v<FloatingPoint>, "Type must be floating point");
     return FRand<FloatingPoint>() * max;
 }
 
 template<typename FloatingPoint>
-inline FloatingPoint Random::FRand()
+inline FloatingPoint XorshiftRNG::FRand()
 {
     static_assert(std::is_floating_point_v<FloatingPoint>, "Type must be floating point");
     return static_cast<FloatingPoint>(GetNext()) / std::numeric_limits<uint64_t>::max();

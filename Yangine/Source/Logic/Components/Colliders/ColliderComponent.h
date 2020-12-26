@@ -5,7 +5,6 @@
 
 #include <Logic/Components/IComponent.h>
 #include <Logic/Collisions/ICollisionCalback.h>
-#include <memory>
 
 //! \namespace yang Contains all Yangine code
 namespace yang
@@ -33,7 +32,7 @@ public:
 	// Public Member Functions
 	// --------------------------------------------------------------------- //
 	/** Default Constructor */
-	ColliderComponent(yang::Actor* pOwner);
+	ColliderComponent(yang::Actor* pOwner, CollisionSystem* pCollisionSystem);
 
 	/// The name of this component
 	/// \return "ColliderComponent"
@@ -48,9 +47,7 @@ public:
 
 	bool Collide(ColliderComponent* pOther);
 
-#ifdef DEBUG
 	virtual bool Render(IGraphics* pGraphics) override;
-#endif
 	
 	virtual void Update(float deltaSeconds) override;
 
@@ -64,15 +61,12 @@ private:
 	std::unique_ptr<IShape> m_pColliderShape;
     std::unique_ptr<ICollisionCallback> m_pCollisionCallback;
 	TransformComponent* m_pTransform;
-	bool m_active;
-
 	// --------------------------------------------------------------------- //
 	// Private Member Functions
 	// --------------------------------------------------------------------- //
 protected:
-    ColliderComponent(yang::Actor* pOwner, Type colliderType, const char* pName);
+    ColliderComponent(yang::Actor* pOwner, CollisionSystem* pCollisionSystem, Type colliderType, const char* pName);
     Type m_type;
-	std::weak_ptr<CollisionSystem> m_pCollisionSystem;
 public:
 	// --------------------------------------------------------------------- //
 	// Accessors & Mutators
@@ -84,10 +78,5 @@ public:
     IShape* GetShape() const { return m_pColliderShape.get(); }
 
     Type GetType() const { return m_type; }
-
-	void Disable() { m_active = false; }
-	void Enable() { m_active = true; }
-
-	bool IsActive() const { return m_active; }
 };
 }

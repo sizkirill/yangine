@@ -6,6 +6,7 @@
 #include <Application/Graphics/Fonts/IFontLoader.h>
 #include <Application/Audio/IAudio.h>
 #include <Logic/IGameLayer.h>
+#include <Logic/Physics/IPhysicsSimulation.h>
 #include <Utils/Logger.h>
 #include <Utils/Vector2.h>
 
@@ -61,6 +62,7 @@ private:
 	std::unique_ptr<IWindow> m_pWindow;                 ///< Associated window
 	std::unique_ptr<IGraphics> m_pGraphics;             ///< Graphics subsystem
     std::unique_ptr<IAudio> m_pAudio;                   ///< Audio subsystem
+    std::unique_ptr<IPhysicsSimulation> m_pPhysics;     ///< Physics subsystem
     std::unique_ptr<IFontLoader> m_pFontLoader;         ///< Font loader subsystem
 
 	// --------------------------------------------------------------------- //
@@ -91,6 +93,10 @@ public:
     /// \brief Get the associated game layer
     /// \return raw pointer to the game layer
     IGameLayer* GetGameLayer() const { return m_pGameLayer.get(); }
+
+    /// \brief Get the physics subsystem
+    /// \return raw pointer to physics system
+    IPhysicsSimulation* GetPhysics() const { return m_pPhysics.get(); }
 
     /// \brief Get the font loader subsystem
     /// \return raw pointer to font loader system

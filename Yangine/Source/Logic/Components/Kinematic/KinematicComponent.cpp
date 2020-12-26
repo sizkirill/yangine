@@ -71,10 +71,10 @@ bool KinematicComponent::Init(tinyxml2::XMLElement* pData)
     using namespace tinyxml2;
 
     XMLElement* pVelocity = pData->FirstChildElement("Velocity");
-    m_velocity = yang::VectorFromXML(pVelocity);
+    m_velocity = yang::FVectorFromXML(pVelocity);
 
     XMLElement* pAcceleration = pData->FirstChildElement("Acceleration");
-    m_acceleration = yang::VectorFromXML(pAcceleration);
+    m_acceleration = yang::FVectorFromXML(pAcceleration);
 
     m_maxSpeed = pData->FloatAttribute("maxSpeed");
     m_maxAcceleration = pData->FloatAttribute("maxAcceleration");

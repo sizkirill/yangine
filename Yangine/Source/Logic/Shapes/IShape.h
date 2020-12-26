@@ -29,6 +29,7 @@ public:
     virtual ~IShape() = default;
     virtual bool Init(tinyxml2::XMLElement* pData) = 0;
     virtual bool Render(IGraphics* pGraphics) = 0;
+    virtual bool DebugDraw(IGraphics* pGraphics) = 0;
 
     virtual bool Collide(IShape* pOther) = 0;
     virtual bool Collide(CircleShape* pOther) = 0;
@@ -39,9 +40,6 @@ public:
 
     virtual void Update(yang::TransformComponent* pTransform) = 0;
 
-#ifdef DEBUG
-    virtual bool DebugDraw(IGraphics* pGraphics) = 0;
-#endif
 protected:
     IColor m_color;
 public:

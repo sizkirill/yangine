@@ -5,11 +5,6 @@
 #include <functional>
 #include <memory>
 
-namespace tinyxml2
-{
-    class XMLElement;
-}
-
 //! \namespace yang Contains all Yangine code
 namespace yang
 {
@@ -43,20 +38,15 @@ public:
 
     /// Constructor
     /// \param pOwner - actor that owns this process
-	IProcess(std::shared_ptr<yang::Actor> pOwner);
+	IProcess(Actor* pOwner);
 
 	/** Default Destructor */
 	virtual ~IProcess();
 
     /// Initializes the process
-    /// \param pData - XML element to initialize process
-    /// \return true if successfully initialized
-    virtual bool Init(tinyxml2::XMLElement* pData);
-
-    /// Post inits the process
     /// Component linking should happen here
     /// \return true if successfully initialized
-    virtual bool PostInit();
+    virtual bool Init();
 
     /// Updates the process by deltaSeconds
     /// \param deltaSeconds - amount of seconds passed since last frame
@@ -75,8 +65,6 @@ public:
     /// \return shared pointer to the removed process
     std::shared_ptr<IProcess> RemoveChild();
 
-    template <uint32_t ProcessHashName, class... Args>
-    static std::shared_ptr<IProcess> CreateProcess(std::shared_ptr<yang::Actor> pOwner, Args... args);
 private:
 	// --------------------------------------------------------------------- //
 	// Private Member Variables
@@ -95,7 +83,7 @@ protected:
     // --------------------------------------------------------------------- //
     // Protected Member Variables
     // --------------------------------------------------------------------- //
-    std::weak_ptr<Actor> m_pOwner;                            ///< Actor that owns this process
+    Actor* m_pOwner;                            ///< Actor that owns this process
 
 public:
 	// --------------------------------------------------------------------- //
@@ -132,6 +120,6 @@ public:
 
     /// Get the actor that owns this process
     /// \return Actor that owns this process
-    std::shared_ptr<yang::Actor> GetOwner() const { return m_pOwner.lock(); }
+    Actor* GetOwner() const { return m_pOwner; }
 };
 }

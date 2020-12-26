@@ -19,14 +19,14 @@ ActorFactory::~ActorFactory()
 	
 }
 
-std::shared_ptr<yang::Actor> yang::ActorFactory::CreateActor(const char* filepath, std::shared_ptr<Scene> pOwner)
+std::shared_ptr<yang::Actor> yang::ActorFactory::CreateActor(const char* filepath)
 {
     ResourceCache* pResCache = ResourceCache::Get();
     auto pResource = pResCache->Load<IResource>(filepath);
-    return CreateActor(pResource.get(), pOwner);
+    return CreateActor(pResource.get());
 }
 
-std::shared_ptr<yang::Actor> yang::ActorFactory::CreateActor(IResource* pActorResource, std::shared_ptr<Scene> pOwner)
+std::shared_ptr<yang::Actor> yang::ActorFactory::CreateActor(IResource* pActorResource)
 {
     using namespace tinyxml2;
 
@@ -40,7 +40,7 @@ std::shared_ptr<yang::Actor> yang::ActorFactory::CreateActor(IResource* pActorRe
 
     // Loaded the file! Lets grab the node and pass it to an actor
     XMLElement* pRoot = doc.RootElement();
-    std::shared_ptr<yang::Actor> pActor = std::make_shared<Actor>(m_nextActorId++, pOwner);
+    std::shared_ptr<yang::Actor> pActor = std::make_shared<Actor>(m_nextActorId++);
     if (!pActor->Init(pRoot))
     {
         LOG(Warning, "Failed to init actor");
@@ -48,6 +48,7 @@ std::shared_ptr<yang::Actor> yang::ActorFactory::CreateActor(IResource* pActorRe
     }
 
     // Iterating through the children of a node
+    using namespace tinyxml2;
     for (XMLElement* pElement = pRoot->FirstChildElement(); pElement != nullptr; pElement = pElement->NextSiblingElement())
     {
         pActor->AddComponent(CreateComponent(pElement, pActor.get()));

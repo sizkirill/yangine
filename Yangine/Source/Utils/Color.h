@@ -80,11 +80,9 @@ public:
 
     static constexpr uint32_t kWhite = 0xffffffff;
     static constexpr uint32_t kBlack = 0x000000ff;
-    static constexpr uint32_t kRed = 0xff0000ff;
 
     static constexpr IColor White() { return yang::IColor(kWhite); }
     static constexpr IColor Black() { return yang::IColor(kBlack); }
-    static constexpr IColor RedColor() { return yang::IColor(kRed); }
 };
 
 } // namespace yang

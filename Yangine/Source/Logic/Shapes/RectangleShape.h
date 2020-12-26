@@ -21,6 +21,7 @@ public:
     RectangleShape(tinyxml2::XMLElement* pData);
     virtual bool Init(tinyxml2::XMLElement* pData) override final;
     virtual bool Render(IGraphics* pGraphics) override final;
+    virtual bool DebugDraw(IGraphics* pGraphics) override final;
 
     virtual bool Collide(IShape* pOther) override final;
     virtual bool Collide(CircleShape* pOther) override final;
@@ -35,10 +36,6 @@ public:
 
     static constexpr const char* GetName() { return "RectangleShape"; }
     static constexpr uint32_t GetHashName() { return StringHash32(GetName()); }
-
-#ifdef DEBUG
-    virtual bool DebugDraw(IGraphics* pGraphics) override final;
-#endif
 private:
     FVec2 m_localCenter;
     FVec2 m_center;

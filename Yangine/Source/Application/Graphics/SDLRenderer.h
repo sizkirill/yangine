@@ -72,6 +72,14 @@ public:
     /// \return true if successful
 	virtual bool DrawTexture(ITexture* pTexture, const IRect& src, const IRect& dest, const TextureDrawParams& drawParams = {}) override final;
 
+    /// Draw the portion of a texture at specified position
+    /// \param pTexture - texture to draw
+    /// \param src - rectangle to use from the texture (in pixels). \see yang::Rectangle
+    /// \param dest - rectangle on the screen to draw the texture to (in pixels). \see yang::Rectangle
+    /// \param drawParams - parameters to draw the texture. Defaulted to a default constructed TextureDrawParams. \see yang::IGraphics::TextureDrawParams. 
+    /// \return true if successful
+    virtual bool DrawTexture(ITexture* pTexture, const IRect& src, const FRect& dest, const TextureDrawParams& drawParams = {}) override final;
+
     /// Draw the rectangle borders on the screen
     /// \param rect - The rectangle to draw (in pixels)
     /// \return true if successful

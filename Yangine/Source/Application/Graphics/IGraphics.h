@@ -103,10 +103,23 @@ public:
     /// \return true if successful
     virtual bool DrawTexture(ITexture* pTexture, const IRect& src, const IRect& dest, const TextureDrawParams& drawParams = TextureDrawParams{}) = 0;
 
+    /// Draw the portion of a texture at specified position
+    /// \param pTexture - texture to draw
+    /// \param src - rectangle to use from the texture (in pixels). \see yang::Rectangle
+    /// \param dest - rectangle on the screen to draw the texture to (in pixels). \see yang::Rectangle
+    /// \param drawParams - parameters to draw the texture. Defaulted to a default constructed TextureDrawParams. \see yang::IGraphics::TextureDrawParams. 
+    /// \return true if successful
+    virtual bool DrawTexture(ITexture* pTexture, const IRect& src, const FRect& dest, const TextureDrawParams& drawParams = {}) = 0;
+
     /// Draw the the sprite at specified position
     /// \param pSprite - sprite to draw;
     /// \param dst - destination rectangle where to draw
     bool DrawSprite(std::shared_ptr<Sprite> pSprite, const IRect& dst);
+
+    /// Draw the the sprite at specified position
+    /// \param pSprite - sprite to draw;
+    /// \param dst - destination rectangle where to draw
+    bool DrawSprite(std::shared_ptr<Sprite> pSprite, const FRect& dst);
 
     /// Draw the the sprite at specified position
     /// \param pSprite - sprite to draw;
@@ -289,9 +302,6 @@ protected:
 	// --------------------------------------------------------------------- //
 	// Protected Member Functions
 	// --------------------------------------------------------------------- //
-    Matrix m_cameraTransform;
-    float m_cameraRotation;
-    FVec2 m_cameraScaleFactors;
 private:
 	// --------------------------------------------------------------------- //
 	// Private Member Variables
@@ -306,8 +316,5 @@ public:
 	// --------------------------------------------------------------------- //
 	// Accessors & Mutators
 	// --------------------------------------------------------------------- //
-    void SetCameraTransform(Matrix cameraTransform) {m_cameraTransform = cameraTransform; }
-    void SetCameraRotation(float angle) {m_cameraRotation = angle; }
-    void SetCameraScaleFactors(FVec2 factors) {m_cameraScaleFactors = factors; }
 };
 }

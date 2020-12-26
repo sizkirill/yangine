@@ -2,14 +2,27 @@
 #include <Utils/TinyXml2/tinyxml2.h>
 
 using yang::FVec2;
+using yang::IVec2;
 
-FVec2 yang::VectorFromXML(tinyxml2::XMLElement* pData, FVec2 defaultVal)
+FVec2 yang::FVectorFromXML(tinyxml2::XMLElement* pData, FVec2 defaultVal)
 {
     FVec2 result = defaultVal;
     if (pData)
     {
         result.x = pData->FloatAttribute("x");
         result.y = pData->FloatAttribute("y");
+    }
+
+    return result;
+}
+
+IVec2 yang::IVectorFromXML(tinyxml2::XMLElement* pData, IVec2 defaultVal)
+{
+    IVec2 result = defaultVal;
+    if (pData)
+    {
+        result.x = pData->IntAttribute("x");
+        result.y = pData->IntAttribute("y");
     }
 
     return result;
@@ -49,6 +62,34 @@ yang::FColor yang::FColorFromXML(tinyxml2::XMLElement* pData, FColor defaultVal)
         result = FColor(r, g, b, a);
     }
 
+    return result;
+}
+
+yang::IRect yang::IRectFromXML(tinyxml2::XMLElement* pData, IRect defaultVal)
+{
+    IRect result = defaultVal;
+
+    if (pData)
+    {
+        result.x = pData->IntAttribute("x", defaultVal.x);
+        result.y = pData->IntAttribute("y", defaultVal.y);
+        result.width = pData->IntAttribute("width", defaultVal.width);
+        result.height = pData->IntAttribute("height", defaultVal.height);
+    }
+    return result;
+}
+
+yang::FRect yang::FRectFromXML(tinyxml2::XMLElement* pData, FRect defaultVal)
+{
+    FRect result = defaultVal;
+
+    if (pData)
+    {
+        result.x = pData->FloatAttribute("x", defaultVal.x);
+        result.y = pData->FloatAttribute("y", defaultVal.y);
+        result.width = pData->FloatAttribute("width", defaultVal.width);
+        result.height = pData->FloatAttribute("height", defaultVal.height);
+    }
     return result;
 }
 

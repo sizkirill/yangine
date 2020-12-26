@@ -1,23 +1,10 @@
 #include "DelayProcess.h"
-#include <Utils/TinyXml2/tinyxml2.h>
 
 using yang::DelayProcess;
-using yang::IProcess;
 
-#pragma warning(push)
-#pragma warning(disable:4307)
-
-template<>
-std::shared_ptr<IProcess> IProcess::CreateProcess<DelayProcess::GetHashName()>(std::shared_ptr<yang::Actor> pOwner)
-{
-    return std::make_shared<DelayProcess>(pOwner);
-};
-
-#pragma warning(pop)
-
-yang::DelayProcess::DelayProcess(std::shared_ptr<yang::Actor> pOwner)
+yang::DelayProcess::DelayProcess(Actor* pOwner, float delay)
     :IProcess(pOwner)
-    ,m_delay(0)
+    ,m_delay(delay)
 {
 }
 
@@ -33,15 +20,4 @@ void yang::DelayProcess::Update(float deltaSeconds)
     {
         Succeed();
     }
-}
-
-bool yang::DelayProcess::Init(tinyxml2::XMLElement* pData)
-{
-    m_delay = pData->FloatAttribute("delay", 0.f);
-    return true;
-}
-
-bool yang::DelayProcess::PostInit()
-{
-    return true;
 }
