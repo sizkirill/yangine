@@ -3,6 +3,8 @@
 /** Delay process description */
 
 #include "..\IProcess.h"
+#include <Utils/StringHash.h>
+#include <string_view>
 
 //! \namespace yang Contains all Yangine code
 namespace yang
@@ -25,15 +27,23 @@ public:
     /// Constructor
     /// \param pOwner - actor that owns this process
     /// \param delay - seconds of delay
-	DelayProcess(Actor* pOwner, float delay);
+	DelayProcess(std::shared_ptr<yang::Actor> pOwner);
 
 	/** Default Destructor */
 	virtual ~DelayProcess();
 
     /// Updates the process by deltaSeconds. Effectively subtracts deltaSeconds from delay
     /// \param deltaSeconds - amount of seconds passed since last frame
-    virtual void Update(float deltaSeconds) override;
+    virtual void Update(float deltaSeconds) override final;
 
+	virtual bool Init(tinyxml2::XMLElement* pData) override final;
+	virtual bool PostInit() override final;
+
+	static constexpr std::string_view kName = "DelayProcess";
+	static constexpr uint32_t kHashName = StringHash32(kName.data());
+
+	static constexpr std::string_view GetName() { return kName; }
+	static constexpr uint32_t GetHashName() { return kHashName; }
 private:
 	// --------------------------------------------------------------------- //
 	// Private Member Variables
@@ -49,7 +59,7 @@ public:
 	// --------------------------------------------------------------------- //
 	// Accessors & Mutators
 	// --------------------------------------------------------------------- //
-
+	void SetDelay(float delay) { m_delay = delay; }
 
 };
 }

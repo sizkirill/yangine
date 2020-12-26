@@ -2,7 +2,7 @@
 
 using yang::IProcess;
 
-IProcess::IProcess(yang::Actor* pOwner)
+IProcess::IProcess(std::shared_ptr<yang::Actor> pOwner)
     :m_state(State::kUninitialized)
     ,m_pOwner(pOwner)
 {
@@ -14,9 +14,13 @@ IProcess::~IProcess()
 	
 }
 
-bool yang::IProcess::Init()
+bool yang::IProcess::Init(tinyxml2::XMLElement* pData)
+{ 
+    return true;
+}
+
+bool yang::IProcess::PostInit()
 {
-    LOG_ONCE(TODO, ProcessInit, "Change Init default implementation at IProcess base class"); 
     return true;
 }
 

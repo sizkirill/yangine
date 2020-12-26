@@ -5,6 +5,7 @@
 #include ".\IComponent.h"
 #include <memory>
 #include <string>
+#include <string_view>
 #include <Utils/Math.h>
 #include <Utils/Vector2.h>
 #include <Utils/Color.h>
@@ -58,6 +59,8 @@ public:
 	/// Updates the text of this component
 	/// \param text - new text to draw
 	void UpdateText(const std::string& text);
+
+	void UpdateText(std::string_view text);
 
 private:
 	// --------------------------------------------------------------------- //

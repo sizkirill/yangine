@@ -128,14 +128,6 @@ bool yang::ApplicationLayer::Init()
     m_pWindow->AttachKeyboard(std::move(pKeyboard));
     m_pWindow->AttachMouse(std::move(pMouse));
 
-    m_pPhysics = IPhysicsSimulation::Create(FVec2(0.f, 9.8f));
-    if (!m_pPhysics || !m_pPhysics->Init())
-    {
-        LOG(Error, "Failed to init physics");
-        Cleanup();
-        return false;
-    }
-
 	LOG(Boot, "ApplicationLayer::Init succeeded");
 
     // Init ResourceCache
@@ -177,7 +169,6 @@ void yang::ApplicationLayer::Cleanup()
 	m_pFontLoader.reset();
 	m_pGraphics.reset();
     m_pWindow.reset();
-    m_pPhysics.reset();
     m_pAudio.reset();
  
 

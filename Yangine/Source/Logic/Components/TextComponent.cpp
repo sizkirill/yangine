@@ -69,6 +69,13 @@ bool yang::TextComponent::Init(tinyxml2::XMLElement* pData)
 	}
 	else
 	{
+		// HACK!!! For copyright symbol!!
+		// TODO: figure out how to get properly fix this hack
+		if (static_cast<unsigned char>(pText[0]) == 194)
+		{
+			++pText;
+		}
+
 		m_pTexture = m_pFont->CreateTextureFromString(pText);
 	}
 
@@ -103,8 +110,11 @@ bool yang::TextComponent::Render(IGraphics* pGraphics)
 {
 	assert(m_pTransform);
 
-	const FVec2& position = m_pTransform->GetPosition();
-	pGraphics->DrawTexture(m_pTexture.get(), IVec2(position));
+	FVec2 position = m_pTransform->GetPosition();
+	IVec2 dimensions = m_pTexture->GetDimensions();
+
+	//pGraphics->DrawTexture(m_pTexture.get(), IVec2(position));
+	pGraphics->DrawTexture(m_pTexture.get(), IVec2(position) - dimensions / 2);
 
 	return false;
 }
@@ -112,6 +122,12 @@ bool yang::TextComponent::Render(IGraphics* pGraphics)
 void yang::TextComponent::UpdateText(const std::string& text)
 {
 	m_pTexture = m_pFont->CreateTextureFromString(text.c_str());
+	m_pTexture->SetTint(m_textColor);
+}
+
+void yang::TextComponent::UpdateText(std::string_view text)
+{
+	m_pTexture = m_pFont->CreateTextureFromString(text.data());
 	m_pTexture->SetTint(m_textColor);
 }
 

@@ -63,16 +63,7 @@ bool ParticleEmitterComponent::Init(tinyxml2::XMLElement* pData)
 
 	m_lifetime = pData->FloatAttribute("lifetime", std::numeric_limits<float>::infinity());
 	m_speedRange = FVectorFromXML(pData->FirstChildElement("SpeedRange"), { 0.f, 10.f });
-	m_initialAngleRange = FVectorFromXML(pData->FirstChildElement("AngleRange"), { 0.f, 360.f });
-
-	m_particles.reserve(m_count);
-	
-	for (size_t i = 0; i < m_count; ++i)
-	{
-		float randomAngle = m_rngDevice.FRand(m_initialAngleRange.x, m_initialAngleRange.y);
-		FVec2 randomVelocity = FVec2::FromAngle(Math::ToRadians(randomAngle));
-		m_particles.push_back({ {0,0}, randomVelocity * m_rngDevice.FRand(m_speedRange.x, m_speedRange.y)});
-	}
+	m_angleRange = FVectorFromXML(pData->FirstChildElement("AngleRange"), { 0.f, 360.f });
 
     return true;
 }
@@ -85,6 +76,11 @@ void yang::ParticleEmitterComponent::Update(float deltaSeconds)
 	{
 		return;
 	}
+
+	UpdateCount();
+
+	//TODO: Fix random assert bug
+	UpdateAngle();
 
 	for (auto& particle : m_particles)
 	{
@@ -152,4 +148,52 @@ bool yang::ParticleEmitterComponent::PostInit()
 	}
 	
 	return true;
+}
+
+void yang::ParticleEmitterComponent::Emit()
+{
+	m_particles.reserve(m_count);
+	m_isEmitting = true;
+}
+
+void yang::ParticleEmitterComponent::Reset()
+{
+	m_isEmitting = false;
+}
+
+void yang::ParticleEmitterComponent::Stop()
+{
+	m_particles.clear();
+	m_isEmitting = false;
+}
+
+void yang::ParticleEmitterComponent::AddParticle()
+{
+	float randomAngle = m_rngDevice.FRand(m_angleRange.x, m_angleRange.y);
+	FVec2 randomVelocity = FVec2::FromAngle(Math::ToRadians(randomAngle));
+	m_particles.push_back({ {0,0}, randomVelocity * m_rngDevice.FRand(m_speedRange.x, m_speedRange.y) });
+}
+
+void yang::ParticleEmitterComponent::UpdateAngle()
+{
+	m_angleRange.x += m_pOwnerTransform->GetRotation();
+	//m_angleRange.x >= 360.f ? m_angleRange.x -= 360.f : m_angleRange.x;
+
+	m_angleRange.y += m_pOwnerTransform->GetRotation();
+	//m_angleRange.y >= 360.f ? m_angleRange.y -= 360.f : m_angleRange.y;
+}
+
+void yang::ParticleEmitterComponent::UpdateCount()
+{
+	// Emit logic
+	if (m_isEmitting && m_particles.size() < m_count)
+	{
+		AddParticle();
+	}
+
+	// If we want to stop emitting this particle, reduce particles each frame
+	if (!m_isEmitting && !m_particles.empty())
+	{
+		m_particles.pop_back();
+	}
 }

@@ -50,10 +50,12 @@ bool yang::CircleShape::Render(IGraphics* pGraphics)
     return pGraphics->FillCircle(m_center + m_localCenter, m_radius, m_color);
 }
 
+#ifdef DEBUG
 bool yang::CircleShape::DebugDraw(IGraphics* pGraphics)
 {
     return pGraphics->DrawCircle(m_center + m_localCenter, m_radius, m_color);
 }
+#endif
 
 bool yang::CircleShape::Collide(IShape* pOther)
 {
@@ -84,7 +86,7 @@ bool yang::CircleShape::Collide(RectangleShape* pOther)
     FVec2 actualCenter = GetCenter();
 
     bool xOverlap = !(actualCenter.x < rectVertices[0].x || actualCenter.x > rectVertices[1].x);
-    bool yOverlap = !(actualCenter.y < rectVertices[0].y || actualCenter.y > rectVertices[1].y);
+    bool yOverlap = !(actualCenter.y < rectVertices[0].y || actualCenter.y > rectVertices[2].y);
 
     if (yOverlap && (std::fabs(actualCenter.x - pOther->GetCenter().x) < std::fabs(m_radius + pOther->GetDimensions().x / 2)))
         return true;
