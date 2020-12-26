@@ -1,0 +1,52 @@
+#include "$scene_name.h"
+#include <cassert>
+
+#pragma warning(push)
+#pragma warning(disable:4307)
+
+template<>
+std::shared_ptr<yang::Scene> yang::Scene::CreateScene<$scene_name::GetHashName()>(yang::IGameLayer& owner)
+{
+    return std::make_shared<$scene_name>(owner);
+};
+
+#pragma warning(pop)
+
+$scene_name::$scene_name(yang::IGameLayer& owner)
+    :yang::Scene(owner)
+{
+}
+
+void $scene_name::OnSceneLoad()
+{
+}
+
+void $scene_name::OnScenePause()
+{
+    UnregisterEvents();
+}
+
+void $scene_name::OnSceneResume()
+{
+    RegisterEvents();
+}
+
+void $scene_name::OnSceneUnload()
+{
+    UnregisterEvents();
+}
+
+void $scene_name::Update(float deltaSeconds)
+{
+    Scene::Update(deltaSeconds);
+}
+
+void $scene_name::RegisterEvents()
+{
+
+}
+
+void $scene_name::UnregisterEvents()
+{
+
+}

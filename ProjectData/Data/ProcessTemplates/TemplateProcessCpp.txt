@@ -1,0 +1,33 @@
+#include "$process_name.h"
+
+#include <Logic/Actor/Actor.h>
+#include <cassert>
+
+using yang::Vector2;
+using yang::IProcess;
+
+#pragma warning(push)
+#pragma warning(disable:4307)
+
+template<>
+std::shared_ptr<IProcess> IProcess::CreateProcess<$process_nameDescription::GetHashName()>(std::shared_ptr<yang::Actor> pOwner)
+{
+    return std::make_shared<$process_name>(pOwner);
+};
+
+#pragma warning(pop)
+
+void $process_nameDescription::Update(float deltaSeconds, $component_names)
+{
+
+}
+
+bool $process_nameDescription::Init(tinyxml2::XMLElement* pData)
+{
+    return true;
+}
+
+bool $process_nameDescription::PostInit($component_names)
+{
+    return true;
+}
