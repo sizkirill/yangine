@@ -5,13 +5,22 @@
 #include <memory>
 #include <Logic/Collisions/Collision.h>
 
+namespace tinyxml2
+{
+    class XMLElement;
+}
+
 namespace yang
 {
 class Actor;
+class Scene;
+class ICollisionCallback;
 
 class CollisionSystem
 {
 public:
+    CollisionSystem() = default;
+    void Init(std::shared_ptr<Scene> pOwner);
     void RegisterCollider(int layer, ColliderComponent* pComponent);
     void Update(float deltaSeconds);
 
@@ -40,7 +49,11 @@ public:
     const std::vector<Collision*>& GetCollisionsOnCollider(ColliderComponent* pCollider);
     void ClearCollisionsWithActor(yang::Actor* pActor);
     void ClearCollisionsWithCollider(ColliderComponent* pCollider);
+
+    std::unique_ptr<ICollisionCallback> CreateCollisionCallback(tinyxml2::XMLElement* pData);
+
 private:
+    std::weak_ptr<Scene> m_pOwnerScene;
     std::unordered_map<int, std::vector<ColliderComponent*>> m_colliders;
     ActiveCollisions m_activeCollisions;
     std::unordered_map<ColliderComponent*, std::vector<Collision*>> m_activeCollisionsByActor;

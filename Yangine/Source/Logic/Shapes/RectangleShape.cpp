@@ -50,10 +50,12 @@ bool yang::RectangleShape::Render(IGraphics* pGraphics)
     return pGraphics->FillRect(GetRect(), m_color);
 }
 
+#ifdef DEBUG
 bool yang::RectangleShape::DebugDraw(IGraphics* pGraphics)
 {
     return pGraphics->DrawRect(GetRect(), m_color);
 }
+#endif
 
 bool yang::RectangleShape::Collide(IShape* pOther)
 {

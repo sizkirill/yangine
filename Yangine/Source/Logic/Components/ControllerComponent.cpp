@@ -7,7 +7,6 @@
 #include <Utils/Typedefs.h>
 
 #include <Logic/Components/MoveComponent.h>
-#include <Logic/Components/Physics/Box2DPhysicsComponent.h>
 
 #include <Utils/StringHash.h>
 using yang::ControllerComponent;

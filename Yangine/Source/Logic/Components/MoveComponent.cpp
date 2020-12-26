@@ -3,10 +3,7 @@
 #include <Utils/TinyXml2/tinyxml2.h>
 #include <Logic/Actor/Actor.h>
 #include <Logic/Components/TransformComponent.h>
-#include <Logic/Components/Physics/Box2DPhysicsComponent.h>
 #include <cassert>
-
-#include <Logic/Physics/Box2DAdapters.h>
 
 #include <Logic/Scripting/LuaManager.h>
 

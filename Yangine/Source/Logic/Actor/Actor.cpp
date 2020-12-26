@@ -10,9 +10,11 @@
 
 using yang::Actor;
 
-yang::Actor::Actor(Id id)
+yang::Actor::Actor(Id id, std::shared_ptr<Scene> pOwner)
     :m_id(id)
     , m_pOwningView(nullptr)
+    , m_hashTag{}
+    ,m_pOwnerScene(pOwner)
 {
 }
 

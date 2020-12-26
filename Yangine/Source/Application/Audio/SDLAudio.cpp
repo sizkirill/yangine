@@ -74,7 +74,7 @@ bool yang::SDLAudio::PlayMusic(IMusic* pMusic, i8 volume, i8 loops)
 	return true;
 }
 
-bool yang::SDLAudio::PlaySound(ISound* pSound, i8 volume)
+int yang::SDLAudio::PlaySound(ISound* pSound, i8 volume, i8 loops)
 {
 	if (!pSound)
 	{
@@ -82,11 +82,21 @@ bool yang::SDLAudio::PlaySound(ISound* pSound, i8 volume)
 		return false;
 	}
 
-	int channelNum = Mix_PlayChannel(-1, reinterpret_cast<Mix_Chunk*>(pSound->GetNativeSound()), 0);
+	int channelNum = Mix_PlayChannel(-1, reinterpret_cast<Mix_Chunk*>(pSound->GetNativeSound()), loops);
     if (volume != -1)
     {
         Mix_Volume(channelNum, volume);
     }
+	return channelNum;
+}
+
+bool yang::SDLAudio::StopChannel(int channel)
+{
+	if (Mix_HaltChannel(channel) == -1)
+	{
+		return false;
+	}
+
 	return true;
 }
 
